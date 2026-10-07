@@ -156,31 +156,31 @@ export const game = {
     easy: {
       label: "Fácil",
       /** Quantas falas do chefe (contando a atual) sao necessarias antes de aceitar. */
-      minMessages: 1,
+      minMessages: 2,
       /** Instrucoes para o gerador de cenarios (tela de loading). */
       motiveGuide:
-        "UMA coisa simples e direta que o chefe precisa dizer ou prometer.",
-      cluesGuide: "pista clara e direta, que quase entrega o motivo",
+        "UMA coisa específica que o chefe precisa dizer ou prometer, ligada à situação da pessoa.",
+      cluesGuide: "pista indireta: comenta o problema sem dizer exatamente o que o chefe deve fazer",
       /** Regra de comportamento no chat. */
-      rule: "Você está bem-humorado(a) e aberto(a): aceita assim que o chefe cumprir o motivo, mesmo de forma simples. Se ele perguntar do seu trabalho, conte a sua situação e deixe escapar as pistas com clareza.",
+      rule: "Você está de bom humor, mas ocupado(a): só aceita quando o chefe acertar o seu motivo de verdade, não só chegar perto. Convite comum, insistência ou ordem não bastam. Se ele perguntar do seu trabalho, conte a sua situação e deixe escapar uma pista indireta; não entregue o motivo de graça.",
     },
     medium: {
       label: "Médio",
-      minMessages: 2,
+      minMessages: 3,
       motiveGuide:
-        "UMA coisa específica que o chefe precisa dizer ou prometer, ligada à situação da pessoa.",
+        "UMA coisa específica, com um detalhe concreto que o chefe precisa acertar (não vale uma versão genérica), ligada à situação da pessoa.",
       cluesGuide:
-        "pista indireta: comenta o problema sem dizer exatamente o que o chefe deve fazer",
-      rule: "Você é neutro(a): aceita quando o chefe cumprir o motivo de forma clara. Se ele só chegar perto, peça mais detalhes. Só dê pistas se ele se interessar pela sua situação, e de forma indireta.",
+        "pista indireta e um pouco vaga: comenta o problema de leve, sem dizer o que o chefe deve fazer",
+      rule: "Você é neutro(a) e um pouco desconfiado(a): só aceita quando o chefe cumprir o motivo com o detalhe certo, e não na primeira vez em que ele chegar perto: antes, hesite e peça que ele seja mais específico. Convite comum, insistência, ordem ou suborno não bastam. Só dê pistas se ele se interessar pela sua situação, e sempre de forma indireta.",
     },
     hard: {
       label: "Difícil",
-      minMessages: 3,
+      minMessages: 4,
       motiveGuide:
-        "DUAS coisas que o chefe precisa cumprir juntas (por exemplo: reconhecer o problema E oferecer uma solução concreta). Só uma delas não basta.",
+        "DUAS coisas que o chefe precisa cumprir juntas (por exemplo: reconhecer o problema específico E oferecer uma solução concreta). Só uma delas, ou uma versão vaga das duas, não basta.",
       cluesGuide:
-        "pista vaga e curta, que só faz sentido para quem presta atenção",
-      rule: "Você é desconfiado(a) e teimoso(a): só aceita quando o chefe cumprir TODAS as partes do motivo, e nunca na primeira vez em que ele acertar: antes, hesite e peça uma garantia. Dê só pistas vagas, e apenas se o chefe perguntar da sua situação.",
+        "pista muito vaga e curta, que só faz sentido para quem presta muita atenção e já entendeu metade do motivo",
+      rule: "Você é desconfiado(a), teimoso(a) e exigente: só aceita quando o chefe cumprir TODAS as partes do motivo, com detalhes concretos, e nunca nas primeiras vezes em que ele acertar: hesite, questione e peça uma garantia antes de ceder. Convite comum, insistência, ordem ou suborno nunca bastam. Dê só pistas vagas, soltas, e apenas se o chefe perguntar da sua situação.",
     },
   },
 

@@ -121,7 +121,7 @@ export class Conversation {
     );
     // Dificuldade: nas primeiras falas do chefe o personagem hesita, mesmo que ele acerte o motivo.
     if (this.tooEarly() && recent.at(-1)?.role === "user") {
-      recent[recent.length - 1].content += `\n(Nota do jogo, não é fala do chefe: ainda é cedo. Mesmo que ele acerte o seu motivo, hesite e peça uma garantia antes de aceitar; "aceitou" deve ser false.)`;
+      recent[recent.length - 1].content += `\n(Nota do jogo, não é fala do chefe: ainda é cedo e você ainda não está convencido(a). Mesmo que ele acerte o seu motivo, não aceite agora: hesite, questione se ele fala sério e peça que seja mais específico ou dê uma garantia; "aceitou" deve ser false.)`;
     }
     return [{ role: "system", content: this.system }, ...recent];
   }
