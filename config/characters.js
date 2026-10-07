@@ -3,8 +3,10 @@
 // gender:  "male" | "female"
 // sprite:  numero da sheet em public/characters/Premade_Character_48x48_<sprite>.png
 // seat:    id da cadeira no mapa (objetos da camada "spawns" de public/maps/baias.json)
-// persona: arquivo Markdown em /personas (<persona>.md) com a personalidade e o
-//          motivo para aceitar o cafe; e o "system prompt" do personagem no Ollama.
+// role/gender: parte FIXA da persona, junto com o arquivo Markdown em /personas (<persona>.md),
+//          que traz personalidade e jeito de falar. Situacao agora, motivo para aceitar o cafe,
+//          pistas e dificuldade sao criados a cada partida na tela de loading (game/scenario.js).
+// persona: nome do arquivo em /personas (sem .md).
 
 /** Personagem principal: fica de pe e e controlado pelo teclado (WASD / setas). */
 export const player = {

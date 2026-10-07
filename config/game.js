@@ -5,7 +5,7 @@
 export const game = {
   // ── Identidade ──────────────────────────────────────────
   name: "chamar-para-tomar-cafe-simulator",
-  version: "0.4.0",
+  version: "0.5.0",
   description:
     "Simulador pixel-art de escritorio: o chefe conversa com a equipe (IA local via Ollama) e tenta convencer alguem a tomar cafe.",
   author: {
@@ -58,7 +58,7 @@ export const game = {
      * Tudo fora dela e coberto com a cor de fundo; a camera e o mundo fisico ficam limitados a ela.
      * public/maps/baias.json tem 720x528px; o recorte inclui um pouco de parede/corredor vizinhos.
      */
-    playfield: { x: 26, y: 44, width: 694, height: 446 },
+    playfield: { x: 26, y: 44, width: 934, height: 446 },
     /** Portas animadas deste mapa (x, y em pixels). O cenario das baias nao tem portas. */
     doors: [],
   },
@@ -120,21 +120,95 @@ export const game = {
     maxAnswerChars: 1000,
     /** Quantas mensagens anteriores vao para o modelo junto com a persona (menos = mais rapido). */
     historyMessages: 8,
+    /**
+     * Opcoes prontas para iniciar a conversa (aparecem enquanto o chefe ainda nao falou nada).
+     * `label` e o texto do botao; `text` e o que o chefe diz ao clicar.
+     */
+    quickReplies: [
+      { id: "coffee", label: "Vamos tomar café?", text: "Vamos tomar café?" },
+      { id: "work", label: "Perguntar sobre o trabalho", text: "Como está o trabalho hoje? No que você está trabalhando agora?" },
+    ],
+  },
+
+  // ── Dificuldade ─────────────────────────────────────────
+  // A cada carregamento, cada personagem recebe uma dificuldade sorteada (com niveis repartidos por
+  // igual entre a equipe) que muda o quao exigente ele e para aceitar o cafe e quao claras sao as pistas.
+  difficulty: {
+    /** Ordem dos niveis; a equipe recebe os niveis em rodizio (embaralhado a cada jogo). */
+    levels: ["easy", "medium", "hard"],
+    easy: {
+      label: "Fácil",
+      /** Quantas falas do chefe (contando a atual) sao necessarias antes de aceitar. */
+      minMessages: 1,
+      /** Instrucoes para o gerador de cenarios (tela de loading). */
+      motiveGuide: "UMA coisa simples e direta que o chefe precisa dizer ou prometer.",
+      cluesGuide: "pista clara e direta, que quase entrega o motivo",
+      /** Regra de comportamento no chat. */
+      rule: "Você está bem-humorado(a) e aberto(a): aceita assim que o chefe cumprir o motivo, mesmo de forma simples. Se ele perguntar do seu trabalho, conte a sua situação e deixe escapar as pistas com clareza.",
+    },
+    medium: {
+      label: "Médio",
+      minMessages: 2,
+      motiveGuide: "UMA coisa específica que o chefe precisa dizer ou prometer, ligada à situação da pessoa.",
+      cluesGuide: "pista indireta: comenta o problema sem dizer exatamente o que o chefe deve fazer",
+      rule: "Você é neutro(a): aceita quando o chefe cumprir o motivo de forma clara. Se ele só chegar perto, peça mais detalhes. Só dê pistas se ele se interessar pela sua situação, e de forma indireta.",
+    },
+    hard: {
+      label: "Difícil",
+      minMessages: 3,
+      motiveGuide: "DUAS coisas que o chefe precisa cumprir juntas (por exemplo: reconhecer o problema E oferecer uma solução concreta). Só uma delas não basta.",
+      cluesGuide: "pista vaga e curta, que só faz sentido para quem presta atenção",
+      rule: "Você é desconfiado(a) e teimoso(a): só aceita quando o chefe cumprir TODAS as partes do motivo, e nunca na primeira vez em que ele acertar: antes, hesite e peça uma garantia. Dê só pistas vagas, e apenas se o chefe perguntar da sua situação.",
+    },
+  },
+
+  // ── Tela de loading ─────────────────────────────────────
+  // Antes do jogo comecar, o Ollama complementa cada persona (personas/*.md) com a situacao agora,
+  // o motivo para aceitar o cafe e as pistas. Se falhar, usa o cenario pronto do proprio .md.
+  loading: {
+    /** Tempo maximo (ms) para gerar o cenario de UM personagem antes de usar o cenario pronto. */
+    timeoutMs: 45000,
+    /** Tentativas por personagem (com o modelo) antes do cenario pronto. */
+    attempts: 2,
+    /** Temperatura da geracao (mais alta que a do chat: queremos variedade). */
+    temperature: 0.8,
+    tips: [
+      "Preparando a cafeteira...",
+      "Moendo os grãos...",
+      "Acordando a equipe...",
+      "Cada pessoa tem um motivo diferente para aceitar o café.",
+      "Pergunte sobre o trabalho: as pessoas contam o que as prende na mesa.",
+      "Convite comum, insistência e ordem raramente funcionam.",
+    ],
   },
 
   // ── Cafe (objetivo do jogo) ─────────────────────────────
   coffee: {
-    /** Ponto em frente a cafeteira: objeto "coffee" da camada "pois" do mapa. */
-    poi: "coffee",
+    /**
+     * Pontos de espera na area de cafe (camada "pois" do mapa): o 1o a aceitar vai para o 1o,
+     * o 2o para o 2o; quem chegar depois faz fila a esquerda do ultimo.
+     */
+    spots: ["coffee", "coffee-2"],
     /** Velocidade (px/s) do personagem andando ate o cafe. */
     walkSpeed: 90,
     /**
-     * Corredores (y em px) usados no caminho baia -> cafeteira: quem senta virado para baixo
-     * sai pelo corredor de cima; quem senta virado para cima, pelo de baixo.
-     * O ultimo trecho sobe/desce na coluna x da cafeteira.
+     * Corredores (y em px) usados no caminho baia -> cafe: quem senta virado para baixo
+     * sai pelo corredor de cima; quem senta virado para cima, pelo de baixo (e sobe pela coluna `corridorX`).
      */
     aisles: { top: 172, bottom: 436 },
-    /** Quem chega depois faz fila a esquerda do primeiro (distancia em px). */
+    corridorX: 561,
+    /** Distancia (px) entre quem faz fila. */
     queueGap: 44,
+    /** Area de cafe do mapa (px do mapa): faixa de piso colorida e a placa na parede. */
+    area: {
+      label: "CAFÉ",
+      x: 684,
+      y: 196,
+      width: 228,
+      height: 280,
+      color: "#d9a05b",
+      alpha: 0.22,
+      sign: { x: 840, y: 72 },
+    },
   },
 };

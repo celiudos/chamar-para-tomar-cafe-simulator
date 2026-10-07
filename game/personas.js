@@ -1,18 +1,51 @@
 // Personas dos personagens: um arquivo Markdown por personagem em /personas.
 //
+// A parte FIXA da persona (personalidade e jeito de falar; profissao e genero vem de
+// config/characters.js) fica no .md. A parte DINAMICA (situacao agora, motivo para aceitar o
+// cafe e pistas) e criada a cada carregamento do jogo em game/scenario.js; os "Cenarios prontos"
+// do .md (um por dificuldade) servem de exemplo para o gerador e de reserva sem o Ollama.
+//
 // Formato (ver personas/README.md):
 //   ---
-//   saudacao: primeira fala ao abrir o chat (nao gasta o modelo)
 //   dica: resumo publico mostrado no HUD (Employees)
 //   ---
 //   # Nome
-//   ## Personalidade / Jeito de falar / Situacao agora / Motivo para aceitar o cafe / Pistas...
-//
-// O corpo (sem o cabecalho) vira o "system prompt" do personagem no Ollama.
+//   ## Personalidade
+//   ## Jeito de falar
+//   ## Cenários prontos
+//   ### Fácil: titulo
+//   - Situação: ...
+//   - Motivo: ...
+//   - Pistas: ...
 import { game } from "../config/index.js";
 
 /** persona por id do personagem, preenchido por loadPersonas(). */
 export const personas = new Map();
+
+const norm = (s) => s.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase().trim();
+
+/** "Fácil" -> "easy" (pelos rotulos de config/game.js -> difficulty). */
+function levelFromLabel(label) {
+  return game.difficulty.levels.find((id) => norm(game.difficulty[id].label) === norm(label));
+}
+
+/** Le os blocos "### Nivel: titulo" com os itens "- Situação/Motivo/Pistas: texto". */
+function parseScenarios(text) {
+  const scenarios = {};
+  for (const block of text.split(/^### /m).slice(1)) {
+    const [heading, ...lines] = block.split("\n");
+    const [label, ...title] = heading.split(":");
+    const level = levelFromLabel(label);
+    if (!level) continue;
+    const field = (name) => {
+      const re = new RegExp(`^-\\s*${name}\\s*:\\s*(.+)$`, "im");
+      return re.exec(lines.join("\n"))?.[1].trim() ?? "";
+    };
+    const scenario = { title: title.join(":").trim(), situation: field("Situa[çc][ãa]o"), reason: field("Motivo"), clues: field("Pistas") };
+    if (scenario.situation && scenario.reason) scenarios[level] = scenario;
+  }
+  return scenarios;
+}
 
 /** Separa o cabecalho `chave: valor` (entre linhas ---) do corpo Markdown. */
 export function parsePersona(markdown) {
@@ -27,11 +60,33 @@ export function parsePersona(markdown) {
       if (i > 0) meta[line.slice(0, i).trim()] = line.slice(i + 1).trim();
     }
   }
+  // Tudo antes de "## Cenários prontos" e a parte fixa; o resto sao os cenarios.
+  const cut = body.search(/^## Cen[aá]rios/im);
+  const fixed = cut >= 0 ? body.slice(0, cut) : body;
   return {
-    greeting: meta.saudacao ?? "",
     hint: meta.dica ?? "",
-    body: body.trim(),
+    body: fixed.trim(),
+    scenarios: cut >= 0 ? parseScenarios(body.slice(cut)) : {},
+    /** Cenario da partida atual (situacao, motivo, pistas, dificuldade): preenchido em game/scenario.js. */
+    scenario: null,
   };
+}
+
+/** Persona minima, usada quando o .md nao carrega. */
+function fallbackPersona(c) {
+  const p = parsePersona(`# ${c.name}\n\n## Personalidade\n${c.name} é ${c.role}. Só aceita café se for muito bem convencido(a).`);
+  p.scenarios = Object.fromEntries(
+    game.difficulty.levels.map((level) => [
+      level,
+      {
+        title: "",
+        situation: "Está concentrado(a) no trabalho.",
+        reason: `${c.name} só aceita ir tomar café se o chefe der um bom motivo ligado ao trabalho dele(a).`,
+        clues: "",
+      },
+    ]),
+  );
+  return p;
 }
 
 /** Carrega a persona de cada personagem (config/characters.js -> persona). */
@@ -45,7 +100,7 @@ export async function loadPersonas(characters) {
         personas.set(c.id, parsePersona(await res.text()));
       } catch (err) {
         console.warn(`[personas] Nao foi possivel carregar ${url}: ${err.message}`);
-        personas.set(c.id, parsePersona(`# ${c.name}\n\nVocê é ${c.name}, ${c.role}. Só aceita café se for muito bem convencido(a).`));
+        personas.set(c.id, fallbackPersona(c));
       }
     }),
   );

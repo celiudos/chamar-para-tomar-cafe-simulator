@@ -48,6 +48,16 @@ export async function warmUp() {
 }
 
 /**
+ * Pedido unico (sem stream) ao modelo, para gerar um JSON no formato `format`.
+ * `options` sobrescreve as opcoes do chat (so campos que nao recarregam o modelo, como temperature).
+ */
+export async function generateJson({ messages, format, options, signal }) {
+  const res = await post("/api/chat", chatBody({ messages, format, stream: false, options: { ...cfg.options, ...options } }), signal);
+  const data = await res.json();
+  return data.message?.content ?? "";
+}
+
+/**
  * POST /api/chat em stream. `onText(textoAcumulado)` e chamado a cada pedaco;
  * se retornar false, a geracao e interrompida (o Ollama para ao perder a conexao).
  * Retorna { content, stats } (stats = ultimo pedaco, com contagem de tokens e tempos).

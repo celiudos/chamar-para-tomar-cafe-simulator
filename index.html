@@ -47,6 +47,19 @@
     </div>
   </div>
 
+  <!-- Tela de loading: complementa as personas (situacao, motivo, pistas) antes de comecar -->
+  <div class="loading" id="loading" role="status" aria-live="polite">
+    <div class="loading__card">
+      <div class="loading__title">chamar-para-tomar-cafe-simulator</div>
+      <div class="loading__subtitle" id="loading-subtitle">Preparando o escritório...</div>
+      <ul class="loading__list" id="loading-list"></ul>
+      <div class="loading__bar" aria-hidden="true"><span id="loading-bar"></span></div>
+      <p class="loading__tip" id="loading-tip"></p>
+      <div class="loading__debug" id="loading-debug" hidden></div>
+      <button type="button" class="pixel-button pixel-button--primary" id="loading-start" hidden>Começar</button>
+    </div>
+  </div>
+
   <script type="module" src="/game/main.js"></script>
 </body>
 </html>

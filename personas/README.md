@@ -1,34 +1,74 @@
 # Personas
 
 Cada personagem de `config/characters.js` aponta para um arquivo desta pasta
-(`persona: "bob"` → `personas/bob.md`). O arquivo é carregado quando o jogo abre e vira o
-_system prompt_ do personagem no Ollama (`config/game.js` → `ollama.model`).
+(`persona: "bob"` → `personas/bob.md`).
+
+A persona tem duas partes:
+
+- **Fixa** (este arquivo + `config/characters.js`): profissão, gênero, personalidade, jeito de
+  falar e interesses. Não muda entre partidas.
+- **Dinâmica** (criada na tela de loading, `game/scenario.js`): **dificuldade**, **situação
+  agora**, **motivo para aceitar o café** e **pistas que o personagem pode dar**. A cada
+  carregamento o Ollama inventa um complemento novo para cada pessoa, e as dificuldades
+  (fácil / médio / difícil, ver `config/game.js` → `difficulty`) são sorteadas e repartidas
+  por igual entre a equipe.
+
+Os dois juntos viram o _system prompt_ do personagem no chat (`game/conversation.js`).
 
 ```markdown
 ---
-saudacao: Primeira fala ao abrir o chat (não usa o modelo).
-dica: Resumo público, mostrado no painel Employees do HUD.
+dica: Resumo público e fixo, mostrado no painel Employees do HUD.
 ---
 
 # Nome
 
 ## Personalidade
 ## Jeito de falar
-## Situação agora
-## Motivo para aceitar o café
-Fulano só aceita ir tomar café se o chefe ... Convite comum, insistência ou ordem não bastam.
-## Pistas que você pode dar
+## Interesses
+Temas que mexem com a pessoa; o gerador usa um deles no motivo e nas pistas.
+
+## Cenários prontos
+### Fácil: título
+- Situação: ...
+- Motivo: Fulano aceita ir tomar café se o chefe ...
+- Pistas: ...
+
+### Médio: título
+### Difícil: título
 ```
 
-Dicas para escrever uma persona:
+## Cenários prontos
 
-- **Motivo para aceitar o café** é a regra do jogo: escreva uma condição concreta e
-  verificável. O modelo responde `aceitou: true` só quando ela é cumprida, e então o
-  personagem levanta e vai até a cafeteira.
+São um por dificuldade e têm duas funções:
+
+1. **Exemplo** de formato e de nível para o gerador da tela de loading.
+2. **Reserva**: se o Ollama estiver fora do ar, sem o modelo ou responder algo inválido, o jogo
+   usa o cenário pronto da dificuldade sorteada.
+
+Escreva-os assim:
+
+- O **motivo** é a regra do jogo: uma condição concreta que o chefe cumpre só conversando.
+  No _difícil_, exija **duas** coisas juntas ("as DUAS coisas: ... E ...").
 - Diga também o que **não** vale (por exemplo, "bug em outra coisa não basta"). Modelos
   pequenos confundem situações parecidas.
-- Mantenha o texto curto: a persona vai inteira em toda mensagem, e menos texto deixa a
+- As **pistas** descrevem o que o personagem comenta sem entregar o motivo: mais claras no
+  fácil, vagas no difícil.
+- Mantenha tudo curto: a persona vai inteira em toda mensagem, e menos texto deixa a
   resposta mais rápida.
-- Pistas na conversa devem ser sutis. A `dica` do HUD já ajuda o jogador a começar.
+
+## Dificuldade
+
+Definida em `config/game.js` → `difficulty`. Cada nível tem:
+
+- `motiveGuide` / `cluesGuide`: instruções para o gerador (quantas condições, quão claras as pistas);
+- `rule`: como o personagem negocia no chat;
+- `minMessages`: quantas falas do chefe são necessárias antes de aceitar (1 / 2 / 3). Antes disso o
+  personagem hesita, mesmo que o chefe acerte o motivo.
+
+## Depuração
+
+Abra o jogo com `?debug` na URL (ex.: `http://localhost:3000/?debug`) para ver o cenário sorteado de
+cada personagem (dificuldade, situação, motivo e pistas) na tela de loading, no console e no painel
+Employees.
 
 O jogo recarrega sozinho (`npm start`) ao salvar um arquivo desta pasta.

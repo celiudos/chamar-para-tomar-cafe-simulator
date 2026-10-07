@@ -2,6 +2,7 @@ import { game as gameCfg, characters } from "../config/index.js";
 import OfficeScene from "./OfficeScene.js";
 import { initHud } from "./hud.js";
 import { loadPersonas } from "./personas.js";
+import { runLoading } from "./loading.js";
 
 // Identidade do jogo vinda de config/game.js
 document.title = gameCfg.name;
@@ -35,13 +36,18 @@ const gameConfig = {
 async function waitForFonts() {
   if (!document.fonts) return;
   const timeout = new Promise((resolve) => setTimeout(resolve, 3000));
-  await Promise.race([document.fonts.load('8px "Press Start 2P"').catch(() => {}), timeout]);
+  const load = (font) => document.fonts.load(font).catch(() => {});
+  await Promise.race([Promise.all([load('8px "Press Start 2P"'), load('12px "ArkPixel"')]), timeout]);
 }
 
-// Fontes e personas (/personas/*.md) carregam em paralelo antes do jogo comecar.
+// Fontes e personas fixas (/personas/*.md) carregam em paralelo.
 await Promise.all([waitForFonts(), loadPersonas(characters)]);
-initHud();
-const phaserGame = new Phaser.Game(gameConfig);
 
+// O Phaser ja carrega o cenario por tras da tela de loading, que complementa as personas
+// (situacao, motivo, pistas e dificuldade) e so libera o jogo quando o jogador clica em "Comecar".
+const phaserGame = new Phaser.Game(gameConfig);
 // Referencia para depuracao no console do navegador (ex.: __GAME__.scene.scenes[0]).
 globalThis.__GAME__ = phaserGame;
+
+await runLoading();
+initHud();

@@ -16,6 +16,9 @@ const BGM_SRC = game.audio.bgm;
 const DEFAULT_BGM_VOLUME = game.audio.defaultVolume;
 const LS_BGM_VOLUME = game.audio.storageKey;
 
+/** `?debug` na URL: mostra o cenario sorteado (dificuldade, situacao, motivo, pistas) na loading e no HUD. */
+export const debugMode = new URLSearchParams(location.search).has("debug");
+
 const ICON = "/public/ui/icons";
 const MODEL = game.ollama.model;
 const MAX_QUESTION = game.chat.maxQuestionChars;
@@ -51,13 +54,13 @@ const SVG_ATTRS =
 const ICON_SPARKLES = `<svg ${SVG_ATTRS}><path d="M9.937 15.5A2 2 0 0 0 8.5 14.063l-6.135-1.582a.5.5 0 0 1 0-.962L8.5 9.936A2 2 0 0 0 9.937 8.5l1.582-6.135a.5.5 0 0 1 .963 0L14.063 8.5A2 2 0 0 0 15.5 9.937l6.135 1.581a.5.5 0 0 1 0 .964L15.5 14.063a2 2 0 0 0-1.437 1.437l-1.582 6.135a.5.5 0 0 1-.963 0z"/><path d="M20 3v4"/><path d="M22 5h-4"/><path d="M4 17v2"/><path d="M5 18H3"/></svg>`;
 const ICON_COFFEE = `<svg ${SVG_ATTRS}><path d="M10 2v2"/><path d="M14 2v2"/><path d="M16 8a1 1 0 0 1 1 1v8a4 4 0 0 1-4 4H7a4 4 0 0 1-4-4V9a1 1 0 0 1 1-1h14a4 4 0 1 1 0 8h-1"/><path d="M6 2v2"/></svg>`;
 
-const esc = (s) =>
+export const esc = (s) =>
   String(s).replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c]);
 
-const spritePath = (c) => `/public/characters/Premade_Character_48x48_${c.sprite}.png`;
+export const spritePath = (c) => `/public/characters/Premade_Character_48x48_${c.sprite}.png`;
 
 // Retrato: recorta o 1o frame "idle-down" da sheet do personagem.
-function portrait(spritePath, scale = 1.1) {
+export function portrait(spritePath, scale = 1.1) {
   const fx = (PORTRAIT_FRAME_INDEX % SHEET_COLUMNS) * FRAME_WIDTH;
   const fy = Math.floor(PORTRAIT_FRAME_INDEX / SHEET_COLUMNS) * FRAME_HEIGHT;
   const w = FRAME_WIDTH * scale;
@@ -152,12 +155,19 @@ function workersPanel(seats, statusOf) {
           <div class="hud-workers__task">Assign a crew member to this seat</div>
         </div>`;
       }
-      const hint = personas.get(seat.id)?.hint;
+      const persona = personas.get(seat.id);
+      const hint = persona?.hint;
+      const sc = persona?.scenario;
+      const debug =
+        debugMode && sc
+          ? `<div class="hud-workers__debug">[${esc(game.difficulty[sc.difficulty]?.label ?? sc.difficulty)} · ${esc(sc.source)}]<br>Situação: ${esc(sc.situation)}<br>Motivo: ${esc(sc.reason)}<br>Pistas: ${esc(sc.clues)}</div>`
+          : "";
       return `
         <div class="hud-workers__item">
           <div class="hud-workers__top">${statusTag(statusOf(seat.id))}<span>${esc(seat.label)}</span></div>
           <div class="hud-workers__task">${esc(seat.roleTitle ?? "Worker")} &middot; ${seat.gender === "female" ? "F" : "M"}</div>
           ${hint ? `<div class="hud-workers__hint">${esc(hint)}</div>` : ""}
+          ${debug}
         </div>`;
     })
     .join("");
@@ -236,6 +246,7 @@ function chatPanelHtml(character) {
     body: `
       <div class="hud-chat-layout">
         <div class="hud-chat" id="chat-list"></div>
+        <div class="hud-chat-quick" id="chat-quick" hidden></div>
         <div class="hud-chat-input-row">
           <div class="hud-chat-input-col">
             <textarea id="chat-input" class="pixel-input pixel-chat-input" rows="1" maxlength="${MAX_QUESTION}"></textarea>
@@ -258,11 +269,15 @@ function chatMessagesHtml(character, streamingText, notice) {
   }
   const conv = conversationFor(character);
   const name = character.name.toUpperCase();
-  const items = conv.entries.map((e) =>
+  const items = [];
+  if (!conv.entries.length && streamingText === undefined) {
+    items.push(`<div class="hud-chat__system">${esc(character.name)} está trabalhando. Escolha uma opção abaixo ou escreva a sua mensagem.</div>`);
+  }
+  items.push(...conv.entries.map((e) =>
     e.role === "user"
       ? chatBubble("user", "VOCE", esc(e.text))
       : chatBubble("agent", name, esc(e.text), e.accepted ? '<span class="hud-chat__tag">aceitou</span>' : ""),
-  );
+  ));
   if (streamingText !== undefined) {
     const body = streamingText
       ? `${esc(streamingText)}<span class="hud-chat__cursor"></span>`
@@ -442,7 +457,11 @@ export function initHud() {
     }
     chatPanel.innerHTML = chatPanelHtml(byId.get(state.chatWith));
     const input = $("chat-input");
-    $("chat-send").addEventListener("click", sendChat);
+    $("chat-send").addEventListener("click", () => sendChat());
+    $("chat-quick").addEventListener("click", (e) => {
+      const reply = game.chat.quickReplies.find((q) => q.id === e.target.closest("[data-quick]")?.dataset.quick);
+      if (reply) sendChat(reply.text);
+    });
     input.addEventListener("input", renderCounter);
     input.addEventListener("keydown", (e) => {
       // O Phaser escuta o teclado na janela; evita mover o chefe enquanto digita.
@@ -487,6 +506,12 @@ export function initHud() {
     const blocked = !character || conv.pending || conv.accepted;
     input.disabled = blocked;
     $("chat-send").disabled = blocked;
+    // Respostas prontas: so para iniciar a conversa (enquanto o chefe ainda nao falou).
+    const quick = $("chat-quick");
+    quick.hidden = !character || conv.accepted || conv.bossMessages > 0;
+    quick.innerHTML = quick.hidden
+      ? ""
+      : game.chat.quickReplies.map((q) => `<button type="button" class="hud-chat-quick__btn" data-quick="${esc(q.id)}">${esc(q.label)}</button>`).join("");
     input.placeholder = !character
       ? "Ninguém selecionado"
       : conv.accepted
@@ -497,12 +522,14 @@ export function initHud() {
     renderCounter();
   }
 
-  async function sendChat() {
+  async function sendChat(override) {
     const character = byId.get(state.chatWith);
     const input = $("chat-input");
     if (!character || !input) return;
     const conv = conversationFor(character);
-    const question = input.value.trim().slice(0, MAX_QUESTION);
+    // `override`: texto de uma resposta pronta (os cliques passam o evento, que e ignorado).
+    const fromQuick = typeof override === "string";
+    const question = (fromQuick ? override : input.value).trim().slice(0, MAX_QUESTION);
     if (!question || conv.pending || conv.accepted) return;
 
     const { id } = character;
@@ -510,7 +537,7 @@ export function initHud() {
       state.streaming.set(id, partial.text);
       if (state.chatWith === id) renderChatMessages();
     });
-    input.value = "";
+    if (!fromQuick) input.value = "";
     state.notice = null;
     state.streaming.set(id, "");
     setStatus(id, "thinking");
@@ -540,7 +567,7 @@ export function initHud() {
       gameEvents.emit("character:thinking", { id, thinking: false });
       // Devolve a pergunta para o jogador tentar de novo.
       const current = $("chat-input");
-      if (state.chatWith === id && current && !current.value) current.value = question;
+      if (!fromQuick && state.chatWith === id && current && !current.value) current.value = question;
       if (err instanceof TypeError) connectOllama();
     }
     if (state.chatWith === id) {

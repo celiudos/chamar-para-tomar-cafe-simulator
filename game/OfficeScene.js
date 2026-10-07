@@ -2,7 +2,7 @@
 // Cenario principal: sala das baias (public/maps/baias.json).
 // O chefe fica de pe e controla pelo teclado; os 6 personagens ficam sentados nas baias.
 // O chat (HUD) avisa por eventos quando um personagem esta pensando/respondendo; quem aceitar
-// o cafe levanta e anda ate a cafeteira (objeto "coffee" da camada "pois" do mapa).
+// o cafe levanta e anda ate a area de cafe (objetos "coffee", "coffee-2"... da camada "pois" do mapa).
 import { game, characters, player as playerCfg, spriteKey, spriteSheets } from "../config/index.js";
 import { EMOTE_FRAME_SIZE, EMOTE_SHEET_KEY, EMOTE_SHEET_PATH, PUBLIC_PATH } from "./constants.js";
 import { Player } from "./Player.js";
@@ -68,6 +68,7 @@ export default class OfficeScene extends Phaser.Scene {
     }
 
     map.createLayer("floor", tilesets);
+    this.drawCoffeeArea();
     map.createLayer("walls", tilesets);
     map.createLayer("ground", tilesets);
     map.createLayer("furniture", tilesets);
@@ -88,10 +89,10 @@ export default class OfficeScene extends Phaser.Scene {
     this.maskOutside(pf);
 
     const { bossSpawn, workerSpawns } = parseSpawns(map);
-    this.coffeeSpot = findPoi(map, game.coffee.poi);
-    if (!this.coffeeSpot) {
-      console.warn(`[OfficeScene] Ponto "${game.coffee.poi}" nao existe na camada "pois"; usando o spawn do chefe`);
-      this.coffeeSpot = { ...bossSpawn, facing: "up" };
+    this.coffeeSpots = game.coffee.spots.map((name) => findPoi(map, name)).filter(Boolean);
+    if (!this.coffeeSpots.length) {
+      console.warn(`[OfficeScene] Pontos ${game.coffee.spots.join(", ")} nao existem na camada "pois"; usando o spawn do chefe`);
+      this.coffeeSpots = [{ ...bossSpawn, facing: "up" }];
     }
 
     // Chefe: de pe, controlado pelo teclado.
@@ -195,21 +196,49 @@ export default class OfficeScene extends Phaser.Scene {
   }
 
   /**
-   * Caminho baia -> cafeteira pelos corredores de config/game.js (coffee.aisles).
-   * O 1o fica em frente a cafeteira; os proximos fazem fila a esquerda, no corredor de cima.
+   * Caminho baia -> area de cafe pelos corredores de config/game.js (coffee.aisles).
+   * Os 2 primeiros ocupam os pontos da area (coffee.spots); os proximos fazem fila a esquerda do ultimo.
    */
   coffeePath(worker) {
-    const { aisles, queueGap } = game.coffee;
-    const spot = this.coffeeSpot;
+    const { aisles, queueGap, corridorX } = game.coffee;
+    const spots = this.coffeeSpots;
     const place = this.coffeeQueue++;
+    const last = spots[spots.length - 1];
     const target =
-      place === 0 ? spot : { x: spot.x - place * queueGap, y: aisles.top, facing: "right" };
+      place < spots.length ? spots[place] : { x: last.x - (place - spots.length + 1) * queueGap, y: last.y, facing: last.facing };
     const aisleY = worker.facing === "down" ? aisles.top : aisles.bottom;
 
     const points = [{ x: worker.sprite.x, y: aisleY }];
-    if (aisleY !== aisles.top) points.push({ x: spot.x, y: aisleY }, { x: spot.x, y: aisles.top });
+    if (aisleY !== aisles.top) points.push({ x: corridorX, y: aisleY }, { x: corridorX, y: aisles.top });
     points.push({ x: target.x, y: aisles.top }, { x: target.x, y: target.y });
     return { points, facing: target.facing };
+  }
+
+  /** Area de cafe: faixa de piso colorida e placa na parede (config/game.js -> coffee.area). */
+  drawCoffeeArea() {
+    const { label, x, y, width, height, color, alpha, sign } = game.coffee.area;
+    const tint = Phaser.Display.Color.HexStringToColor(color).color;
+    // Logo depois do piso: fica por baixo das paredes, moveis e personagens.
+    this.add.rectangle(x, y, width, height, tint, alpha).setOrigin(0, 0);
+    this.add.rectangle(x, y, width, height).setOrigin(0, 0).setStrokeStyle(2, tint, 0.55);
+
+    const text = this.add
+      .text(sign.x, sign.y, label, {
+        fontFamily: '"ArkPixel", "Press Start 2P", monospace',
+        fontSize: "14px",
+        fontStyle: "bold",
+        color: "#fff3d6",
+        padding: { x: 8, y: 6 },
+        backgroundColor: "#6b4a2b",
+      })
+      .setOrigin(0.5)
+      .setDepth(9)
+      .setResolution(2);
+    // Moldura da placa.
+    this.add
+      .rectangle(sign.x, sign.y, text.width + 4, text.height + 4)
+      .setStrokeStyle(2, 0x2b1b0e)
+      .setDepth(9);
   }
 
   /** Pinta com a cor de fundo tudo que esta fora da area jogavel. */
