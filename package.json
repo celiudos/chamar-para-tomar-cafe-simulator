@@ -1,0 +1,14 @@
+{
+  "name": "agent-town-lite",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Interface pixel-art estilo Agent Town (cenario + personagens) feita com Phaser 3. Apenas UI, sem mecanica.",
+  "type": "module",
+  "scripts": {
+    "start": "http-server . -p 3000 -c-1 -o",
+    "dev": "http-server . -p 3000 -c-1 -o"
+  },
+  "devDependencies": {
+    "http-server": "^14.1.1"
+  }
+}

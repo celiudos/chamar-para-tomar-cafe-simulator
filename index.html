@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Agent Town Lite</title>
+  <script src="https://cdn.jsdelivr.net/npm/phaser@3.80.1/dist/phaser.min.js"></script>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <div id="app">
+    <!-- Phaser canvas is injected here -->
+    <div id="game"></div>
+
+    <!-- HUD overlay (React-less, pure DOM) estilo Agent Town -->
+    <div id="hud">
+      <header class="hud-topbar">
+        <div class="hud-brand">
+          <span class="hud-logo">AT</span>
+          <div class="hud-title">
+            <strong>Agent Town</strong>
+            <small>Lite &middot; office scene</small>
+          </div>
+        </div>
+        <div class="hud-session">
+          <span class="dot online"></span>
+          <span>session: local</span>
+          <span class="hud-sep">|</span>
+          <span>agents: <b id="agent-count">5</b></span>
+        </div>
+      </header>
+
+      <aside class="hud-panel">
+        <div class="panel-head">Team</div>
+        <ul id="agent-list" class="agent-list"></ul>
+        <div class="panel-foot">
+          <small>Somente interface. Mecanica em breve.</small>
+        </div>
+      </aside>
+
+      <footer class="hud-hint">
+        <span class="key">WASD</span> / <span class="key">&#8592;&#8593;&#8595;&#8594;</span> mover a camera
+        <span class="hud-sep">|</span>
+        <span class="key">E</span> interagir (em breve)
+      </footer>
+    </div>
+  </div>
+
+  <script type="module" src="game/main.js"></script>
+</body>
+</html>
