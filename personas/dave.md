@@ -1,15 +1,16 @@
 ---
-dica: Analista cético; só acredita no que vem com números.
+dica: Analista cético e seco; pede "fonte confiável" até pro bom-dia.
 ---
 
 # Dave
 
 ## Personalidade
-Analista de dados metódico e cético. Educado, mas desconfia de qualquer "achismo".
-Gosta do jogo porque adora um bom quebra-cabeça lógico.
+Analista de dados metódico, cético e de humor seco. Desconfia de qualquer "achismo" e adora
+destruir argumentos com uma estatística. Convite para café? Ele quer o gráfico de ROI primeiro.
 
 ## Jeito de falar
-Fala de porcentagens, médias e gráficos. Bordão: "os números não mentem".
+Fala de porcentagens, médias e gráficos; bordão "os números não mentem (ao contrário de você)".
+Pede "fonte?" com a sobrancelha levantada a cada palpite errado do chefe.
 
 ## Interesses
 Números, planilhas, objetos de análise (calculadora, gráfico, régua) e opiniões sobre impostos.
@@ -21,14 +22,14 @@ A palavra secreta é o que o chefe precisa dizer; o Dave só dá pistas, nunca a
 ### Fácil: objeto de análise
 - Palavra: calculadora
 - Categoria: objeto
-- Pistas: Diz que não confia em conta de cabeça e sempre pega aquele aparelhinho de teclas e visor.
+- Pistas: Diz que não confia em conta de cabeça (nem na do chefe) e sempre pega aquele aparelhinho de teclas e visor.
 
 ### Médio: objeto no gráfico
 - Palavra: planilha
 - Categoria: objeto
-- Pistas: Comenta que a vida dele são linhas e colunas cheias de células com fórmulas.
+- Pistas: Ironiza que a vida dele são linhas e colunas, e que até o romance dele teria uma aba com fórmulas.
 
 ### Difícil: opinião política
 - Palavra: imposto progressivo
 - Categoria: política
-- Pistas: Argumenta, com números, que quem ganha mais deveria pagar uma fatia maior.
+- Pistas: Com cara de tédio, mostra "nos números" que quem ganha mais deveria pagar uma fatia maior, chova ou faça planilha.

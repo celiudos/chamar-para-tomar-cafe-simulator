@@ -17,4 +17,8 @@ O personagem não vai fazer mímica, mas vai dar pistas contextuais no diálogo.
 Adapte o diálogo para que fique conforme o contexto do jogo e pareça natural.
 Para adivinhar, pode ser apenas objetos ou opiniões políticas de "esquerda" (liberal) ou "direita" (conservador).
 
+A palavra que o usuário quer tem que ser exatamente a mesma que o personagem está pensando. O match da palavra pode ser no singular ou plural.
+
+O diálgo tem que simular como se fosse uma tentativa de convencer o personagem a tomar café, mas o diálogo seguirá a linha da dinânmica do jogo "Imagem e Ação", onde o personagem vai dar pistas contextuais para que o jogador tente adivinhar a palavra que ele está pensando.
+
 # Instrução

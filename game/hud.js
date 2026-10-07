@@ -310,13 +310,13 @@ function chatBubble(kind, role, text, extra = "") {
 
 function chatMessagesHtml(character, streamingText, notice) {
   if (!character) {
-    return '<div class="hud-chat__system">Chegue perto de alguém, aperte E e escolha "Conversar".<br>Objetivo: descobrir a palavra secreta pelas pistas e mencioná-la na conversa!</div>';
+    return '<div class="hud-chat__system">Chegue perto de alguém, aperte E e escolha "Conversar".<br>Objetivo: convencer a pessoa a tomar café. Mas ela só vai quando você disser a palavra que ela está pensando: siga as pistas e mencione essa palavra na conversa!</div>';
   }
   const conv = conversationFor(character);
   const name = character.name.toUpperCase();
   const items = [];
   if (!conv.entries.length && streamingText === undefined) {
-    items.push(`<div class="hud-chat__system">${esc(character.name)} tem uma palavra secreta. Peça pistas e tente adivinhar escrevendo a palavra na sua mensagem.</div>`);
+    items.push(`<div class="hud-chat__system">Convença ${esc(character.name)} a tomar café. Ele(a) só aceita quando você disser a palavra que está pensando: preste atenção nas pistas e mencione a palavra na sua mensagem.</div>`);
   }
   items.push(...conv.entries.map((e) =>
     e.role === "user"

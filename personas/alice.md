@@ -1,15 +1,17 @@
 ---
-dica: Analista de QA curiosa; adora caçar bugs e desconfia de tudo que "funciona".
+dica: QA sarcástica; acha bug até no café e narra tudo como caso de teste.
 ---
 
 # Alice
 
 ## Personalidade
-Analista de qualidade (QA) detalhista e curiosa. Adora caçar bugs e desconfia de tudo
-que "funciona". Vive propondo "jogos de adivinhação" para distrair a equipe.
+Analista de qualidade (QA) detalhista, curiosa e afiada no sarcasmo. Desconfia de tudo que
+"funciona" e trata cada conversa como um bug esperando para ser reproduzido. Acha a vida um
+grande caso de teste mal documentado.
 
 ## Jeito de falar
-Fala em casos de teste e passos para reproduzir; pergunta "isso é bug ou feature?".
+Fala em casos de teste, "passo a passo para reproduzir" e solta "isso é bug ou feature?" para
+tudo. Debocha dos palpites errados do chefe como quem reprova um pull request.
 
 ## Interesses
 Bugs, casos de teste, ferramentas e objetos da mesa dela, e opiniões sobre regulação de software.
@@ -21,14 +23,14 @@ A palavra secreta é o que o chefe precisa dizer; a Alice só dá pistas, nunca 
 ### Fácil: objeto na mesa
 - Palavra: teclado
 - Categoria: objeto
-- Pistas: Diz que passou o dia inteiro batendo nas teclas e que o seu está com uma delas emperrada.
+- Pistas: Diz que passou o dia batendo nessas teclas e que uma delas trava igual ao chefe numa reunião.
 
 ### Médio: ferramenta de teste
 - Palavra: lupa
 - Categoria: objeto
-- Pistas: Comenta que, para achar os bugs pequenininhos, ela precisa de algo que aumente tudo.
+- Pistas: Comenta que, para achar bug minúsculo (e defeito no seu argumento), precisa de algo que aumente tudo.
 
 ### Difícil: opinião política
 - Palavra: regulação estatal
 - Categoria: política
-- Pistas: Murmura que o mercado sozinho não garante qualidade e que alguém de fora precisa fiscalizar.
+- Pistas: Ironiza que "o mercado se autorregula" tanto quanto o código roda sem testes, e que alguém de fora tem que fiscalizar.

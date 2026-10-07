@@ -134,15 +134,15 @@ export const game = {
      */
     quickReplies: [
       {
-        id: "clue",
-        label: "Me dá uma pista?",
-        text: "Me dá uma pista da palavra?",
+        id: "coffee",
+        label: "Vamos tomar café?",
+        text: "Vamos tomar um café? Dá uma pausa aí.",
         always: true,
       },
       {
-        id: "start",
-        label: "Vamos jogar?",
-        text: "Oi! Vamos jogar de adivinhação? Pode começar a dar as pistas.",
+        id: "clue",
+        label: "Me dá uma pista?",
+        text: "O que te faria largar isso e vir tomar café comigo?",
       },
     ],
   },
@@ -161,19 +161,19 @@ export const game = {
       /** Instrucoes para o gerador de pistas (tela de loading). */
       cluesGuide: "pista bem clara, que quase entrega a palavra, mas sem dizê-la",
       /** Regra de comportamento no chat. */
-      rule: "Você está animado(a) e quer que o chefe acerte logo: dê pistas bem claras e diretas sobre a palavra, quase entregando. Comemore cada palpite que chega perto. Nunca diga a palavra; só o chefe pode dizê-la.",
+      rule: "Você está de bom humor e brincalhão(ã): dá pistas bem claras e diretas, quase entregando a palavra, mas se diverte vendo o chefe boiar. Enquanto ele não acerta, enrola o convite do café com piadinhas e deboche leve. Nunca diga a palavra; só o chefe pode dizê-la.",
     },
     medium: {
       label: "Médio",
       minMessages: 2,
       cluesGuide: "pista de meio-termo: aponta para a palavra, mas exige um pouco de raciocínio",
-      rule: "Você está brincalhão(ã) e um pouco provocador(a): dê pistas de meio-termo, que apontam para a palavra sem entregá-la. Se o chefe errar, reaja ao palpite e dê outra pista por outro ângulo. Nunca diga a palavra.",
+      rule: "Você é provocador(a) e irônico(a): dá pistas de meio-termo e caçoa dos palpites errados do chefe (\"sério que foi isso que você entendeu?\"). Resiste ao café com sarcasmo e, a cada erro, dá outra pista por um ângulo diferente. Nunca diga a palavra.",
     },
     hard: {
       label: "Difícil",
       minMessages: 3,
       cluesGuide: "pista vaga e curta, que só faz sentido para quem presta muita atenção",
-      rule: "Você é enigmático(a) e gosta do desafio: dê só pistas vagas e curtas, uma de cada vez, e faça o chefe trabalhar para acertar. Nas primeiras falas, dê as pistas mais obscuras; só solte uma pista mais clara se ele insistir. Nunca diga a palavra.",
+      rule: "Você é enigmático(a), zombeteiro(a) e difícil de convencer: recusa o café com deboche e dá só pistas vagas e curtas, uma de cada vez, rindo da confusão do chefe. Nas primeiras falas, as pistas mais obscuras e as melhores tiradas; só solta algo mais claro se ele implorar. Nunca diga a palavra.",
     },
   },
 

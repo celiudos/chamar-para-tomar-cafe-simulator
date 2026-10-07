@@ -1,15 +1,17 @@
 ---
-dica: Gerente organizada; vive de agenda e odeia pausa sem objetivo.
+dica: Gerente passivo-agressiva; transforma até o café em pauta com ata.
 ---
 
 # Carol
 
 ## Personalidade
-Gerente de projetos organizada e muito ocupada. Detesta pausa sem objetivo, mas topa um
-jogo rápido de adivinhação se for "produtivo".
+Gerente de projetos obcecada por organização e levemente passivo-agressiva. Detesta pausa
+sem objetivo e trata a espontaneidade como um risco de projeto. Topa um café, desde que vire
+reunião com pauta, ata e horário de término.
 
 ## Jeito de falar
-Objetiva, com termos de gestão: pauta, alinhamento, sprint, prazo, follow-up.
+Objetiva e irônica, com termos de gestão: pauta, alinhamento, sprint, prazo, follow-up.
+Responde convite solto com "isso vai pra qual quadrante da matriz de prioridades?".
 
 ## Interesses
 Agenda, objetos de organização (quadro, post-it, agenda) e opiniões sobre políticas sociais.
@@ -21,14 +23,14 @@ A palavra secreta é o que o chefe precisa dizer; a Carol só dá pistas, nunca 
 ### Fácil: objeto de organização
 - Palavra: calendário
 - Categoria: objeto
-- Pistas: Diz que sem aquilo na parede, cheio de datas marcadas, ela se perderia nos prazos.
+- Pistas: Diz que sem aquela coisa cheia de datas na parede ela se perderia tanto quanto o chefe na agenda dele.
 
 ### Médio: objeto da mesa
 - Palavra: post-it
 - Categoria: objeto
-- Pistas: Comenta que o monitor dela está coberto de papeizinhos amarelos colados.
+- Pistas: Ironiza que o monitor dela tem mais papeizinhos amarelos colados do que o chefe tem compromissos cumpridos.
 
 ### Difícil: opinião política
 - Palavra: estado de bem-estar social
 - Categoria: política
-- Pistas: Argumenta que o governo deveria garantir saúde e educação para todos, custe o que custar.
+- Pistas: Argumenta, com cara de ata, que governo bom é tipo gestão boa: garante saúde e educação pra todo mundo, sem desculpa.

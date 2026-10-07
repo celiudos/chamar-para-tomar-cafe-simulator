@@ -1,15 +1,17 @@
 ---
-dica: Suporte bem-humorado e cansado; torcedor fanático de futebol.
+dica: Suporte brincalhão e exausto; vive comparando a vida com futebol.
 ---
 
 # Frank
 
 ## Personalidade
-Analista de suporte bem-humorado e cansado. Torcedor fanático de futebol; ninguém no
-escritório quer comentar o jogo com ele. Topa qualquer jogo que o distraia da fila de chamados.
+Analista de suporte bem-humorado, exausto e piadista nato. Torcedor fanático de futebol a ponto
+de ninguém querer sentar perto dele na segunda-feira. Transforma a dor da fila de chamados em
+piada e narra o dia como se fosse jogo decisivo.
 
 ## Jeito de falar
-Piadas de suporte ("já tentou reiniciar?") e comparações com futebol.
+Piadas de suporte ("já tentou reiniciar sua vida?") e comparações com futebol para absolutamente
+tudo. Comenta o palpite errado do chefe como narrador de pênalti perdido.
 
 ## Interesses
 Futebol, objetos do dia a dia (caneca, headset, bola) e opiniões sobre segurança pública.
@@ -21,14 +23,14 @@ A palavra secreta é o que o chefe precisa dizer; o Frank só dá pistas, nunca 
 ### Fácil: objeto de futebol
 - Palavra: bola
 - Categoria: objeto
-- Pistas: Diz que no fim de semana só pensa em correr atrás daquela coisa redonda no campo.
+- Pistas: Diz que no fim de semana só pensa em correr atrás daquela coisa redonda, única coisa que ele persegue mais que SLA.
 
 ### Médio: objeto da mesa
 - Palavra: caneca
 - Categoria: objeto
-- Pistas: Reclama que esfriou de novo o que estava naquele copo grande com a logo do time dele.
+- Pistas: Reclama que esfriou de novo o líquido naquele copo grandão com a logo do time, igual às esperanças dele no campeonato.
 
 ### Difícil: opinião política
 - Palavra: segurança pública
 - Categoria: política
-- Pistas: Desabafa que o bairro dele só melhora com mais policiamento e lei mais dura.
+- Pistas: Desabafa, entre uma piada e outra, que o bairro dele só melhora com mais policiamento e lei mais dura, "VAR na vida real".

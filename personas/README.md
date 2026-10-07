@@ -62,10 +62,15 @@ Escreva-os assim:
 
 ## Como o acerto é decidido
 
-Não é o modelo que decide: o código (`game/conversation.js` → `mentionsWord`) compara a fala do
-chefe (sem acentos nem pontuação) com a palavra secreta. Mencionar a palavra no meio de qualquer
-frase conta como acerto. Para palavras de um só termo, o termo precisa aparecer inteiro; para
-expressões (ex.: "livre mercado"), basta a expressão aparecer na fala.
+O diálogo é temático: o chefe conversa tentando **convencer a pessoa a tomar café**, mas ela só vai
+quando ele disser a palavra que ela está pensando (no estilo Imagem e Ação, com pistas no diálogo).
+
+Não é o modelo que decide o acerto: o código (`game/conversation.js` → `mentionsWord`) compara a fala
+do chefe (sem acentos nem pontuação) com a palavra secreta. A palavra tem que ser **exatamente** a
+mesma, mas o match aceita **singular ou plural** (ex.: palavra "cadeira" casa com "cadeiras", e
+"papel" com "papeis"). Palavra parecida, sinônimo ou um termo que apenas _contém_ a palavra não
+contam. Para expressões (ex.: "livre mercado"), a sequência precisa aparecer na fala, cada termo
+batendo no singular ou plural.
 
 ## Dificuldade
 
