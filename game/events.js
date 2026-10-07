@@ -1,0 +1,19 @@
+// Barramento de eventos minimo entre a cena Phaser e o HUD (DOM).
+// Eventos: "seats" -> lista de cadeiras/personagens descobertos no mapa.
+
+const target = new EventTarget();
+const last = new Map();
+
+export const gameEvents = {
+  emit(name, detail) {
+    last.set(name, detail);
+    target.dispatchEvent(new CustomEvent(name, { detail }));
+  },
+  /** Assina o evento e, se ele ja ocorreu, entrega o ultimo valor imediatamente. */
+  on(name, handler) {
+    const listener = (e) => handler(e.detail);
+    target.addEventListener(name, listener);
+    if (last.has(name)) handler(last.get(name));
+    return () => target.removeEventListener(name, listener);
+  },
+};

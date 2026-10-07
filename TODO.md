@@ -11,3 +11,7 @@ A mecânica será diferente e irei implementar no futuro.
 Utilize package.json para iniciar o servidor local.
 
 # Instrução
+
+Altere a UI do game para ficar o mais parecido possível visualmente com o `Agent Town`.
+
+Alere o nome do jogo para `chamar-para-tomar-cafe-simulator`.

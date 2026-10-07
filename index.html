@@ -3,49 +3,50 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Agent Town Lite</title>
-  <script src="https://cdn.jsdelivr.net/npm/phaser@3.80.1/dist/phaser.min.js"></script>
-  <link rel="stylesheet" href="style.css" />
+  <title>chamar-para-tomar-cafe-simulator</title>
+  <meta name="description" content="chamar-para-tomar-cafe-simulator: um escritorio pixel-art no estilo Agent Town" />
+  <link rel="icon" href="data:," />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/style.css" />
+  <script src="/node_modules/phaser/dist/phaser.min.js"></script>
 </head>
 <body>
   <div id="app">
-    <!-- Phaser canvas is injected here -->
+    <!-- Canvas do Phaser -->
     <div id="game"></div>
 
-    <!-- HUD overlay (React-less, pure DOM) estilo Agent Town -->
-    <div id="hud">
-      <header class="hud-topbar">
-        <div class="hud-brand">
-          <span class="hud-logo">AT</span>
-          <div class="hud-title">
-            <strong>Agent Town</strong>
-            <small>Lite &middot; office scene</small>
-          </div>
+    <!-- HUD flutuante (mesma estrutura de layout do Agent Town) -->
+    <div class="hud-overlay">
+      <div class="layout-top">
+        <div class="layout-topbar__title">
+          <span class="layout-topbar__logo">chamar-para-tomar-cafe-simulator</span>
         </div>
-        <div class="hud-session">
-          <span class="dot online"></span>
-          <span>session: local</span>
-          <span class="hud-sep">|</span>
-          <span>agents: <b id="agent-count">5</b></span>
-        </div>
-      </header>
 
-      <aside class="hud-panel">
-        <div class="panel-head">Team</div>
-        <ul id="agent-list" class="agent-list"></ul>
-        <div class="panel-foot">
-          <small>Somente interface. Mecanica em breve.</small>
-        </div>
-      </aside>
+        <div class="layout-topbar__agents" id="agent-pills"></div>
 
-      <footer class="hud-hint">
-        <span class="key">WASD</span> / <span class="key">&#8592;&#8593;&#8595;&#8594;</span> mover a camera
-        <span class="hud-sep">|</span>
-        <span class="key">E</span> interagir (em breve)
-      </footer>
+        <div class="layout-topbar__tools" id="tool-buttons"></div>
+      </div>
+
+      <!-- Flyout que cai abaixo dos botoes de ferramentas (canto superior direito) -->
+      <div class="hud-topright-flyout" id="topright-flyout" hidden></div>
+
+      <div class="layout-bottom">
+        <div class="layout-bottombar" id="bottom-bar"></div>
+        <div class="layout-bottom__spacer"></div>
+
+        <div class="hud-chat-dock">
+          <div class="hud-chat-dock__panel" id="chat-panel" hidden></div>
+          <button type="button" class="hud-chat-dock__btn" id="chat-toggle" title="Chat">
+            <img src="/public/ui/icons/icon-chat.png" alt="" />
+            <span class="hud-chat-dock__label">Chat</span>
+          </button>
+        </div>
+      </div>
     </div>
   </div>
 
-  <script type="module" src="game/main.js"></script>
+  <script type="module" src="/game/main.js"></script>
 </body>
 </html>
