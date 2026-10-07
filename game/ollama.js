@@ -3,7 +3,13 @@
 import { game } from "../config/index.js";
 
 const cfg = game.ollama;
-const endpoint = (path) => `${cfg.baseUrl.replace(/\/+$/, "")}${path}`;
+
+/** Aberto pelo IP da rede (LAN): passa pelo proxy do `npm start` na mesma maquina do jogo. */
+export const viaLanProxy = !["localhost", "127.0.0.1", "[::1]"].includes(location.hostname);
+export const baseUrl = viaLanProxy
+  ? `http://${location.hostname}:${cfg.lanProxyPort}`
+  : cfg.baseUrl.replace(/\/+$/, "");
+const endpoint = (path) => `${baseUrl}${path}`;
 
 /** Mesmo modelo, keep_alive e opcoes em todas as chamadas: mudar num_ctx recarregaria o modelo. */
 function chatBody(extra) {

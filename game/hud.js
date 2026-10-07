@@ -9,7 +9,7 @@ import { game, characters } from "../config/index.js";
 import { FRAME_HEIGHT, FRAME_WIDTH, PORTRAIT_FRAME_INDEX, SHEET_COLUMNS } from "./constants.js";
 import { gameEvents } from "./events.js";
 import { conversationFor } from "./conversation.js";
-import { checkOllama, warmUp } from "./ollama.js";
+import { baseUrl, checkOllama, viaLanProxy, warmUp } from "./ollama.js";
 import { personas } from "./personas.js";
 
 const BGM_SRC = game.audio.bgm;
@@ -81,7 +81,10 @@ function formatDuration(ms) {
 /** Mensagem amigavel para erros da chamada ao Ollama. */
 function errorMessage(err) {
   if (err instanceof TypeError) {
-    return `Sem conexão com o Ollama em ${game.ollama.baseUrl}. Abra o Ollama (ou rode "ollama serve") e tente de novo.`;
+    if (viaLanProxy) {
+      return `Sem conexão com o Ollama em ${baseUrl}. Confira se o "npm start" está rodando na máquina do jogo e tente de novo.`;
+    }
+    return `Sem conexão com o Ollama em ${baseUrl}. Abra o Ollama (ou rode "ollama serve") e tente de novo.`;
   }
   if (/not found/i.test(err.message)) return `Modelo ${MODEL} não encontrado. Rode "ollama pull ${MODEL}".`;
   return `Erro do Ollama: ${err.message}`;
@@ -248,7 +251,7 @@ function connectionPanel(status, error) {
       <div class="hud-panel__stack">
         <div class="hud-panel__row"><span class="pixel-dot pixel-dot--${s.dot}"></span><span>${esc(s.label)}</span></div>
         <label class="hud-panel__label" for="conn-url">URL</label>
-        <input id="conn-url" class="pixel-input hud-panel__input" value="${esc(game.ollama.baseUrl)}" readonly />
+        <input id="conn-url" class="pixel-input hud-panel__input" value="${esc(baseUrl)}" readonly />
         <label class="hud-panel__label" for="conn-model">Model</label>
         <input id="conn-model" class="pixel-input hud-panel__input" value="${esc(MODEL)}" readonly />
         ${help}

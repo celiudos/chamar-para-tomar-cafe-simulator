@@ -6,7 +6,7 @@
   "author": "Marcelo Note",
   "type": "module",
   "scripts": {
-    "start": "live-server . --port=3000 --open=/ --watch=index.html,style.css,game,config,personas,public/maps --ignore=node_modules --wait=200",
+    "start": "node scripts/serve.mjs",
     "dev": "npm start",
     "build:map": "node scripts/build-baias-map.mjs"
   },

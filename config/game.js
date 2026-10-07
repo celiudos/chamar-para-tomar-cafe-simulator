@@ -89,8 +89,16 @@ export const game = {
 
   // ── IA local (Ollama) ───────────────────────────────────
   ollama: {
-    /** O navegador chama a API direto (o Ollama libera CORS para localhost/127.0.0.1). */
+    /**
+     * Ollama desta maquina. Aberto por localhost, o navegador chama a API direto
+     * (o Ollama libera CORS para localhost/127.0.0.1).
+     */
     baseUrl: "http://127.0.0.1:11434",
+    /**
+     * Aberto pelo IP da rede (LAN), o navegador usa o proxy que o `npm start` sobe nesta porta
+     * (scripts/serve.mjs), que repassa as chamadas para o `baseUrl`.
+     */
+    lanProxyPort: 3005,
     model: "gemma4:e2b",
     /** Mantem o modelo carregado entre as mensagens (o 1o carregamento leva alguns segundos). */
     keepAlive: "30m",
@@ -125,8 +133,17 @@ export const game = {
      * Com `always: true` o botao fica sempre disponivel; sem isso, so aparece para iniciar a conversa.
      */
     quickReplies: [
-      { id: "coffee", label: "Vamos tomar café?", text: "Vamos tomar café?", always: true },
-      { id: "work", label: "Perguntar sobre o trabalho", text: "Como está o trabalho hoje? No que você está trabalhando agora?" },
+      {
+        id: "coffee",
+        label: "Vamos tomar café?",
+        text: "Vamos tomar café?",
+        always: true,
+      },
+      {
+        id: "work",
+        label: "Perguntar sobre o trabalho",
+        text: "Como está o trabalho hoje? No que você está trabalhando agora?",
+      },
     ],
   },
 
@@ -141,7 +158,8 @@ export const game = {
       /** Quantas falas do chefe (contando a atual) sao necessarias antes de aceitar. */
       minMessages: 1,
       /** Instrucoes para o gerador de cenarios (tela de loading). */
-      motiveGuide: "UMA coisa simples e direta que o chefe precisa dizer ou prometer.",
+      motiveGuide:
+        "UMA coisa simples e direta que o chefe precisa dizer ou prometer.",
       cluesGuide: "pista clara e direta, que quase entrega o motivo",
       /** Regra de comportamento no chat. */
       rule: "Você está bem-humorado(a) e aberto(a): aceita assim que o chefe cumprir o motivo, mesmo de forma simples. Se ele perguntar do seu trabalho, conte a sua situação e deixe escapar as pistas com clareza.",
@@ -149,15 +167,19 @@ export const game = {
     medium: {
       label: "Médio",
       minMessages: 2,
-      motiveGuide: "UMA coisa específica que o chefe precisa dizer ou prometer, ligada à situação da pessoa.",
-      cluesGuide: "pista indireta: comenta o problema sem dizer exatamente o que o chefe deve fazer",
+      motiveGuide:
+        "UMA coisa específica que o chefe precisa dizer ou prometer, ligada à situação da pessoa.",
+      cluesGuide:
+        "pista indireta: comenta o problema sem dizer exatamente o que o chefe deve fazer",
       rule: "Você é neutro(a): aceita quando o chefe cumprir o motivo de forma clara. Se ele só chegar perto, peça mais detalhes. Só dê pistas se ele se interessar pela sua situação, e de forma indireta.",
     },
     hard: {
       label: "Difícil",
       minMessages: 3,
-      motiveGuide: "DUAS coisas que o chefe precisa cumprir juntas (por exemplo: reconhecer o problema E oferecer uma solução concreta). Só uma delas não basta.",
-      cluesGuide: "pista vaga e curta, que só faz sentido para quem presta atenção",
+      motiveGuide:
+        "DUAS coisas que o chefe precisa cumprir juntas (por exemplo: reconhecer o problema E oferecer uma solução concreta). Só uma delas não basta.",
+      cluesGuide:
+        "pista vaga e curta, que só faz sentido para quem presta atenção",
       rule: "Você é desconfiado(a) e teimoso(a): só aceita quando o chefe cumprir TODAS as partes do motivo, e nunca na primeira vez em que ele acertar: antes, hesite e peça uma garantia. Dê só pistas vagas, e apenas se o chefe perguntar da sua situação.",
     },
   },
