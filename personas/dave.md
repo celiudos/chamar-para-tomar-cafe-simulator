@@ -24,10 +24,10 @@ A palavra secreta é o que o chefe precisa dizer; o Dave só dá pistas, nunca a
 - Categoria: objeto
 - Pistas: Diz que não confia em conta de cabeça (nem na do chefe) e sempre pega aquele aparelhinho de teclas e visor.
 
-### Médio: objeto no gráfico
-- Palavra: planilha
+### Médio: objeto da mesa
+- Palavra: régua
 - Categoria: objeto
-- Pistas: Ironiza que a vida dele são linhas e colunas, e que até o romance dele teria uma aba com fórmulas.
+- Pistas: Ironiza que confia tanto no "a olho" quanto na promessa de prazo do chefe, por isso mede tudo com aquele objeto reto e numerado.
 
 ### Difícil: opinião política
 - Palavra: imposto progressivo

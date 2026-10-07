@@ -51,6 +51,26 @@ function normCategory(raw) {
   return "objeto";
 }
 
+/**
+ * Palavra em portugues do Brasil? Rejeita letras fora do alfabeto PT (k/w/y soltas),
+ * estrangeirismos comuns de escritorio e marcas. Nao e exaustivo, mas filtra os casos tipicos.
+ */
+const FOREIGN_WORDS = new Set([
+  "post-it", "postit", "mouse", "notebook", "laptop", "desktop", "mousepad", "headset",
+  "tablet", "smartphone", "pendrive", "deadline", "feedback", "briefing", "e-mail", "email",
+  "software", "hardware", "display", "coffee", "coffee-break", "break", "office", "sticky",
+]);
+function isPortuguese(word) {
+  const w = word.toLowerCase().trim();
+  if (FOREIGN_WORDS.has(w)) return false;
+  if (w.split(/\s+/).some((t) => FOREIGN_WORDS.has(t))) return false;
+  // k, w, y so aparecem em estrangeirismos no portugues; se houver, provavelmente nao e PT-BR.
+  if (/[kwy]/i.test(w)) return false;
+  // Caracteres fora do portugues (acentos permitidos ja normalizados pelo clean? nao: mantemos).
+  if (!/^[a-zà-ú0-9\s-]+$/i.test(w)) return false;
+  return true;
+}
+
 /** Prompt do gerador. O exemplo (cenario pronto do .md) mostra o formato e o nivel de dificuldade. */
 export function buildGeneratorMessages(character, persona, level) {
   const d = difficulty[level];
@@ -59,7 +79,8 @@ export function buildGeneratorMessages(character, persona, level) {
   const system = [
     "Você cria rodadas para um jogo de adivinhação de escritório bem-humorado, em português do Brasil.",
     'O jogo é parecido com "Imagem e Ação", mas sem mímica: o funcionário quer que o chefe mencione uma PALAVRA SECRETA e vai soltando pistas no diálogo até ele acertar.',
-    'A palavra secreta é um "objeto" (uma coisa concreta e simples) OU uma "política" (uma opinião política de esquerda/liberal ou de direita/conservador, dita em 1 a 3 palavras).',
+    'A palavra secreta é um "objeto" (uma COISA MATERIAL, concreta, que dá para pegar na mão) OU uma "política" (uma opinião política de esquerda/liberal ou de direita/conservador, dita em 1 a 3 palavras).',
+    "Use SEMPRE palavras do português do Brasil. Nada de estrangeirismos, marcas ou termos em inglês (ex.: não use \"post-it\", \"mouse\", \"notebook\"; prefira \"bloco de notas\", \"ratinho do computador\", \"caderno\").",
     'Responda só com JSON: {"palavra": "...", "categoria": "objeto" ou "política", "pistas": "..."}',
   ].join("\n");
   const user = [
@@ -67,10 +88,12 @@ export function buildGeneratorMessages(character, persona, level) {
     persona.body,
     "",
     `Dificuldade: ${d.label}.`,
-    '- "palavra": a palavra secreta que o chefe precisa dizer para acertar. 1 a 3 palavras, do dia a dia, ligada aos Interesses do funcionário. Pode ser um objeto concreto OU uma opinião política curta de esquerda/liberal ou direita/conservador.',
-    '- "categoria": "objeto" se a palavra for uma coisa; "política" se for uma opinião política.',
+    '- "palavra": a palavra secreta que o chefe precisa dizer para acertar. 1 a 3 palavras em português do Brasil, do dia a dia, ligada aos Interesses do funcionário.',
+    '  Se for "objeto", tem que ser uma COISA MATERIAL e concreta (dá para tocar), nunca algo abstrato ou digital (não vale "planilha", "ideia", "prazo", "software").',
+    '  Se for "política", é uma opinião política curta de esquerda/liberal ou direita/conservador.',
+    '- "categoria": "objeto" se a palavra for uma coisa material; "política" se for uma opinião política.',
     `- "pistas": 1 frase curta que o funcionário diz na conversa, levando o chefe à palavra sem NUNCA dizê-la: ${d.cluesGuide}.`,
-    "- Nada de termos técnicos rebuscados. A palavra tem que ser possível de adivinhar pelas pistas. Invente algo diferente do exemplo.",
+    "- Nada de termos técnicos rebuscados nem palavras em outro idioma. A palavra tem que ser possível de adivinhar pelas pistas. Invente algo diferente do exemplo.",
     example
       ? `\nExemplo de estilo (invente algo DIFERENTE):\n${JSON.stringify({ palavra: example.word, categoria: example.category, pistas: example.clues })}`
       : "",
@@ -95,6 +118,8 @@ export function parseGenerated(raw) {
   // Palavra de 1 a ~4 palavras; pistas com um minimo de conteudo.
   if (word.length < 2 || word.length > 40 || word.split(/\s+/).length > 4) return null;
   if (clues.length < 8 || clues.length > 300) return null;
+  // So aceita palavra em portugues do Brasil (sem estrangeirismos nem marcas).
+  if (!isPortuguese(word)) return null;
   return { word, category, clues };
 }
 

@@ -51,9 +51,12 @@ São um por dificuldade e têm duas funções:
 
 Escreva-os assim:
 
-- A **palavra** é a resposta do jogo: 1 a 3 palavras, do dia a dia, ligada aos Interesses. Pode ser
-  um **objeto** (uma coisa concreta) ou uma **opinião política** curta de esquerda/liberal ou
+- A **palavra** é a resposta do jogo: 1 a 3 palavras **em português do Brasil** (sem
+  estrangeirismos nem marcas, ex.: nada de "post-it" ou "mouse"), do dia a dia, ligada aos
+  Interesses. Pode ser um **objeto** ou uma **opinião política** curta de esquerda/liberal ou
   direita/conservador.
+- Se a categoria for `objeto`, a palavra tem que ser uma **coisa material e concreta** (que dá para
+  pegar na mão): "lápis", "caneca", "régua". Nada abstrato ou digital ("planilha", "prazo", "ideia").
 - A **categoria** é `objeto` ou `política` (qualquer rótulo com "polit" vira `política`; o resto, `objeto`).
 - As **pistas** são o que o personagem comenta _sem nunca dizer a palavra_: mais claras no fácil,
   vagas no difícil. Elas devem levar o chefe até a palavra.

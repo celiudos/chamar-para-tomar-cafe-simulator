@@ -26,9 +26,9 @@ A palavra secreta é o que o chefe precisa dizer; a Carol só dá pistas, nunca 
 - Pistas: Diz que sem aquela coisa cheia de datas na parede ela se perderia tanto quanto o chefe na agenda dele.
 
 ### Médio: objeto da mesa
-- Palavra: post-it
+- Palavra: grampeador
 - Categoria: objeto
-- Pistas: Ironiza que o monitor dela tem mais papeizinhos amarelos colados do que o chefe tem compromissos cumpridos.
+- Pistas: Ironiza que a mesa dela é mais organizada que o chefe e que aquele troço de prender papel vive sumindo das mãos dela.
 
 ### Difícil: opinião política
 - Palavra: estado de bem-estar social
