@@ -121,11 +121,11 @@ export const game = {
     /** Quantas mensagens anteriores vao para o modelo junto com a persona (menos = mais rapido). */
     historyMessages: 8,
     /**
-     * Opcoes prontas para iniciar a conversa (aparecem enquanto o chefe ainda nao falou nada).
-     * `label` e o texto do botao; `text` e o que o chefe diz ao clicar.
+     * Opcoes prontas do chat. `label` e o texto do botao; `text` e o que o chefe diz ao clicar.
+     * Com `always: true` o botao fica sempre disponivel; sem isso, so aparece para iniciar a conversa.
      */
     quickReplies: [
-      { id: "coffee", label: "Vamos tomar café?", text: "Vamos tomar café?" },
+      { id: "coffee", label: "Vamos tomar café?", text: "Vamos tomar café?", always: true },
       { id: "work", label: "Perguntar sobre o trabalho", text: "Como está o trabalho hoje? No que você está trabalhando agora?" },
     ],
   },

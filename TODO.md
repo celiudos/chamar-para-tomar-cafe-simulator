@@ -33,10 +33,6 @@ Se durante a conversa o jogador conseguir, o personagem irá levantar e ir até 
 As conversas não podem ter mais do que 1000 caracteres de perguntas e 1000 de respostas.
 Deixe otimizado para que o ollama responda rápido.
 
-# Instrução
-
-Agora faça o seguinte:
-
 - As personas serão fixas em termos de profissão, personalidade e gênero.
 - No momento que carregar o jogo, será exibida uma tela de loading que irá complementar as personas, adicionando a:
 - Situação agora
@@ -46,3 +42,10 @@ Agora faça o seguinte:
 - Para o chat, deixe uma opção default de ""Vamos tomar café?" e uma opção de "Perguntar sobre o trabalho" para iniciar a conversa.
 - Atualize o cenário para ter uma área de Café, a qual os dois personagens que aceitarem o café irão se dirigir para lá.
 - Adicione dificuldades dinâmicas para cada complemento dinâmico de persona, de modo que um personagem pode ser mais difícil de convencer que outro, e o jogador terá que descobrir a melhor forma de convencê-los.
+
+# Instrução
+
+Agora faça o seguinte:
+
+- Crie uma área na UI para poder ver as personas geradas, mesmo que tenham as respostas. Avise que o usuário vai poder ver as respostas.
+- O texto rápido de "Vamos tomar café?" precisa sempre ficar disponível no chat, mesmo que o jogador já tenha feito a pergunta.

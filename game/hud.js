@@ -30,6 +30,8 @@ const TOOLS = [
   { id: "connection", label: "Ollama", icon: "icon-connection", active: "icon-connection-active" },
   { id: "tasks", label: "Tasks", icon: "icon-tasks", active: "icon-tasks-active" },
   { id: "workers", label: "Employees", icon: "icon-workers", active: "icon-workers-active" },
+  // Sem icone em pixel art no pacote: usa um SVG no lugar da imagem.
+  { id: "personas", label: "Personas (mostra as respostas)", svg: true },
 ];
 
 /** Status da conexao com o Ollama: cor do ponto e texto da pill. */
@@ -52,6 +54,7 @@ const CHARACTER_STATUS = {
 const SVG_ATTRS =
   'width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"';
 const ICON_SPARKLES = `<svg ${SVG_ATTRS}><path d="M9.937 15.5A2 2 0 0 0 8.5 14.063l-6.135-1.582a.5.5 0 0 1 0-.962L8.5 9.936A2 2 0 0 0 9.937 8.5l1.582-6.135a.5.5 0 0 1 .963 0L14.063 8.5A2 2 0 0 0 15.5 9.937l6.135 1.581a.5.5 0 0 1 0 .964L15.5 14.063a2 2 0 0 0-1.437 1.437l-1.582 6.135a.5.5 0 0 1-.963 0z"/><path d="M20 3v4"/><path d="M22 5h-4"/><path d="M4 17v2"/><path d="M5 18H3"/></svg>`;
+const ICON_SCROLL = `<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 12h-5"/><path d="M15 8h-5"/><path d="M19 17V5a2 2 0 0 0-2-2H4"/><path d="M8 21h12a2 2 0 0 0 2-2v-1a1 1 0 0 0-1-1H11a1 1 0 0 0-1 1v1a2 2 0 1 1-4 0V5a2 2 0 1 0-4 0v2a1 1 0 0 0 1 1h3"/></svg>`;
 const ICON_COFFEE = `<svg ${SVG_ATTRS}><path d="M10 2v2"/><path d="M14 2v2"/><path d="M16 8a1 1 0 0 1 1 1v8a4 4 0 0 1-4 4H7a4 4 0 0 1-4-4V9a1 1 0 0 1 1-1h14a4 4 0 1 1 0 8h-1"/><path d="M6 2v2"/></svg>`;
 
 export const esc = (s) =>
@@ -175,6 +178,46 @@ function workersPanel(seats, statusOf) {
     title: "Employees",
     subtitle: `${assigned} na equipe`,
     body: `<div class="hud-workers">${items || '<div class="hud-empty">No seats found</div>'}</div>`,
+  });
+}
+
+/** Cenario gerado para cada personagem. Fica escondido ate o jogador confirmar, pois entrega as respostas. */
+function personasPanel(revealed) {
+  const warning = `<div class="hud-spoiler">
+      <strong>Atenção: spoiler!</strong> Esta área mostra a situação, o motivo e as pistas geradas para cada pessoa
+      nesta partida, ou seja, <strong>as respostas do jogo</strong>. Prefere descobrir conversando? Mantenha fechado.
+    </div>`;
+  if (!revealed) {
+    return flyout({
+      title: "Personas",
+      subtitle: "Cenário gerado nesta partida",
+      body: `<div class="hud-panel__stack">${warning}
+        <button type="button" class="pixel-button" id="personas-toggle">Ver as respostas</button></div>`,
+    });
+  }
+  const items = characters
+    .map((c) => {
+      const sc = personas.get(c.id)?.scenario;
+      if (!sc) return "";
+      const level = game.difficulty[sc.difficulty];
+      const tag = sc.difficulty === "hard" ? "running" : sc.difficulty === "easy" ? "done" : "empty";
+      const min = level?.minMessages ?? 1;
+      return `
+        <div class="hud-workers__item">
+          <div class="hud-workers__top"><span class="hud-status hud-status--${tag}">${esc(level?.label ?? sc.difficulty)}</span><span>${esc(c.name)} &middot; ${esc(c.role)}</span></div>
+          <div class="hud-persona__field"><b>Situação</b>${esc(sc.situation)}</div>
+          <div class="hud-persona__field"><b>Motivo</b>${esc(sc.reason)}</div>
+          <div class="hud-persona__field"><b>Pistas</b>${esc(sc.clues || "—")}</div>
+          <div class="hud-workers__hint">${sc.source === "ollama" ? "Gerado pelo Ollama" : "Cenário reserva (Ollama indisponível)"} &middot; aceita a partir da ${min}ª fala do chefe</div>
+        </div>`;
+    })
+    .join("");
+  return flyout({
+    title: "Personas",
+    subtitle: "Cenário gerado nesta partida",
+    body: `<div class="hud-panel__stack">${warning}
+      <button type="button" class="pixel-button" id="personas-toggle">Ocultar as respostas</button>
+      <div class="hud-workers hud-workers--tall">${items}</div></div>`,
   });
 }
 
@@ -336,6 +379,8 @@ export function initHud() {
     /** Chave de OLLAMA_STATUS. */
     ollama: "checking",
     ollamaError: "",
+    /** Painel Personas: so mostra as respostas (cenario gerado) depois de o jogador pedir. */
+    revealPersonas: false,
     /** Status por personagem (chave de CHARACTER_STATUS). */
     status: new Map(),
     /** Uso de contexto da ultima resposta: { used, total } */
@@ -377,6 +422,9 @@ export function initHud() {
   function renderTools() {
     tools.innerHTML = TOOLS.map((t) => {
       const active = state.openPanel === t.id;
+      if (t.svg) {
+        return `<button type="button" class="topbar-tool-btn topbar-tool-btn--svg ${active ? "topbar-tool-btn--active" : ""}" data-tool="${t.id}" title="${t.label}" aria-label="${t.label}">${ICON_SCROLL}</button>`;
+      }
       const icon = t.id === "music" && bgm.volume <= 0 ? "icon-music-muted" : active ? t.active : t.icon;
       return `<button type="button" class="topbar-tool-btn ${active ? "topbar-tool-btn--active" : ""}" data-tool="${t.id}" title="${t.label}">
         <img src="${ICON}/${icon}.png" alt="${t.label}" /></button>`;
@@ -430,7 +478,9 @@ export function initHud() {
           ? connectionPanel(state.ollama, state.ollamaError)
           : id === "tasks"
             ? tasksPanel(statusOf)
-            : workersPanel(state.seats, statusOf);
+            : id === "personas"
+              ? personasPanel(state.revealPersonas)
+              : workersPanel(state.seats, statusOf);
     flyoutEl.hidden = false;
 
     const slider = $("bgm-slider");
@@ -442,6 +492,10 @@ export function initHud() {
       });
     }
     $("conn-retry")?.addEventListener("click", connectOllama);
+    $("personas-toggle")?.addEventListener("click", () => {
+      state.revealPersonas = !state.revealPersonas;
+      renderFlyout();
+    });
   }
 
   // ── Chat ────────────────────────────────────────────────
@@ -506,12 +560,13 @@ export function initHud() {
     const blocked = !character || conv.pending || conv.accepted;
     input.disabled = blocked;
     $("chat-send").disabled = blocked;
-    // Respostas prontas: so para iniciar a conversa (enquanto o chefe ainda nao falou).
+    // Respostas prontas: as com `always` ficam sempre; as demais so ate o chefe falar.
     const quick = $("chat-quick");
-    quick.hidden = !character || conv.accepted || conv.bossMessages > 0;
-    quick.innerHTML = quick.hidden
-      ? ""
-      : game.chat.quickReplies.map((q) => `<button type="button" class="hud-chat-quick__btn" data-quick="${esc(q.id)}">${esc(q.label)}</button>`).join("");
+    const replies = !character || conv.accepted ? [] : game.chat.quickReplies.filter((q) => q.always || conv.bossMessages === 0);
+    quick.hidden = !replies.length;
+    quick.innerHTML = replies
+      .map((q) => `<button type="button" class="hud-chat-quick__btn" data-quick="${esc(q.id)}" ${conv.pending ? "disabled" : ""}>${esc(q.label)}</button>`)
+      .join("");
     input.placeholder = !character
       ? "Ninguém selecionado"
       : conv.accepted

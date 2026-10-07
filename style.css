@@ -510,6 +510,17 @@ button { font-family: inherit; }
 .hud-chat-quick__btn:hover:not(:disabled), .hud-chat-quick__btn:focus-visible { background: rgba(201, 162, 39, 0.18); outline: none; }
 .hud-chat-quick__btn:disabled { opacity: 0.5; cursor: not-allowed; }
 .hud-workers__debug { margin-top: 4px; font-family: var(--pixel-font-chat); font-size: 11px; line-height: 1.4; color: var(--pixel-yellow); }
+/* --- Painel Personas (cenario gerado = respostas do jogo) --- */
+.topbar-tool-btn--svg { color: var(--pixel-muted); }
+.topbar-tool-btn--svg:hover, .topbar-tool-btn--svg.topbar-tool-btn--active { color: var(--pixel-accent); }
+.hud-spoiler {
+  padding: 8px 10px;
+  font-family: var(--pixel-font-chat); font-size: 12px; line-height: 1.5; color: #fde68a;
+  background: rgba(250, 204, 21, 0.08); border: 1px solid rgba(250, 204, 21, 0.5); border-radius: var(--pixel-radius-sm);
+}
+.hud-workers--tall { max-height: min(46vh, calc(100vh - 300px)); }
+.hud-persona__field { margin-top: 4px; font-family: var(--pixel-font-chat); font-size: 12px; line-height: 1.45; color: var(--pixel-text); word-break: break-word; }
+.hud-persona__field b { display: block; font-family: var(--pixel-font); font-size: 8px; font-weight: 400; color: var(--pixel-accent); text-transform: uppercase; }
 @media (prefers-reduced-motion: reduce) {
   .loading__item--working .loading__status, .hud-victory, .hud-victory__card, .hud-chat__cursor, .hud-chat__typing i { animation: none; }
 }

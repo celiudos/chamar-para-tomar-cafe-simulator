@@ -65,6 +65,12 @@ Definida em `config/game.js` → `difficulty`. Cada nível tem:
 - `minMessages`: quantas falas do chefe são necessárias antes de aceitar (1 / 2 / 3). Antes disso o
   personagem hesita, mesmo que o chefe acerte o motivo.
 
+## Ver o cenário gerado
+
+No HUD, o botão **Personas** (ícone de pergaminho, canto superior direito) mostra a dificuldade, a
+situação, o motivo e as pistas de cada personagem. Como isso revela as respostas do jogo, o painel
+avisa sobre o spoiler e só mostra o conteúdo depois que o jogador clica em "Ver as respostas".
+
 ## Depuração
 
 Abra o jogo com `?debug` na URL (ex.: `http://localhost:3000/?debug`) para ver o cenário sorteado de
