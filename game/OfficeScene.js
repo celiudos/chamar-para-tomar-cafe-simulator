@@ -1,6 +1,8 @@
 // Portado de agent-town (MIT): components/game/scenes/OfficeScene.ts
 // Cenario principal: sala das baias (public/maps/baias.json).
 // O chefe fica de pe e controla pelo teclado; os 6 personagens ficam sentados nas baias.
+// O chat (HUD) avisa por eventos quando um personagem esta pensando/respondendo; quem aceitar
+// o cafe levanta e anda ate a cafeteira (objeto "coffee" da camada "pois" do mapa).
 import { game, characters, player as playerCfg, spriteKey, spriteSheets } from "../config/index.js";
 import { EMOTE_FRAME_SIZE, EMOTE_SHEET_KEY, EMOTE_SHEET_PATH, PUBLIC_PATH } from "./constants.js";
 import { Player } from "./Player.js";
@@ -9,12 +11,17 @@ import { CameraController } from "./CameraController.js";
 import { DoorManager } from "./DoorManager.js";
 import { InteractionManager } from "./interactions.js";
 import { gameEvents } from "./events.js";
-import { buildCollisionRects, buildSpriteFrames, parseSpawns, renderTileObjectLayer } from "./MapHelpers.js";
+import { buildCollisionRects, buildSpriteFrames, findPoi, parseSpawns, renderTileObjectLayer } from "./MapHelpers.js";
+
+/** Tempo (ms) lendo o "sim" antes de levantar da cadeira. */
+const STAND_UP_DELAY = 1500;
 
 export default class OfficeScene extends Phaser.Scene {
   constructor() {
     super({ key: "OfficeScene" });
     this.workers = [];
+    /** Quantos personagens ja foram (ou estao indo) para o cafe: define o lugar na fila. */
+    this.coffeeQueue = 0;
   }
 
   preload() {
@@ -81,6 +88,11 @@ export default class OfficeScene extends Phaser.Scene {
     this.maskOutside(pf);
 
     const { bossSpawn, workerSpawns } = parseSpawns(map);
+    this.coffeeSpot = findPoi(map, game.coffee.poi);
+    if (!this.coffeeSpot) {
+      console.warn(`[OfficeScene] Ponto "${game.coffee.poi}" nao existe na camada "pois"; usando o spawn do chefe`);
+      this.coffeeSpot = { ...bossSpawn, facing: "up" };
+    }
 
     // Chefe: de pe, controlado pelo teclado.
     this.player = new Player(this, bossSpawn.x, bossSpawn.y, bossSpawn.facing, spriteKey(playerCfg.sprite));
@@ -129,10 +141,75 @@ export default class OfficeScene extends Phaser.Scene {
 
     gameEvents.emit("seats", [...seats.filter(Boolean), ...vacant]);
 
+    const unsubscribe = [
+      gameEvents.on("character:thinking", ({ id, thinking }) => this.onThinking(id, thinking)),
+      gameEvents.on("character:reply", ({ id, text, accepted }) => this.onReply(id, text, accepted)),
+    ];
+
     this.events.once(Phaser.Scenes.Events.SHUTDOWN, () => {
+      unsubscribe.forEach((off) => off());
       this.workers.forEach((w) => w.destroy());
       this.interactions.destroy();
     });
+  }
+
+  workerById(id) {
+    return this.workers.find((w) => w.character.id === id);
+  }
+
+  /** Enquanto o Ollama responde: emote "..." sobre o personagem. */
+  onThinking(id, thinking) {
+    const worker = this.workerById(id);
+    if (!worker || worker.leftSeat) return;
+    if (thinking) {
+      worker.pauseActivities();
+      worker.showEmote("emote:dots");
+      worker.setStatus("working");
+    } else {
+      worker.hideEmote();
+      worker.setStatus("idle");
+      worker.resumeActivities();
+    }
+  }
+
+  /** Resposta do personagem: balao de fala e, se aceitou, levanta e vai ate a cafeteira. */
+  onReply(id, text, accepted) {
+    const worker = this.workerById(id);
+    if (!worker || worker.leftSeat) return;
+    const ttl = Math.max(game.interaction.bubbleMs, text.length * 60);
+    worker.showBubble(text, ttl);
+    if (!accepted) {
+      worker.setStatus("idle");
+      worker.resumeActivities(ttl);
+      return;
+    }
+    worker.setStatus("done");
+    worker.leftSeat = true;
+    this.time.delayedCall(STAND_UP_DELAY, () => {
+      const { points, facing } = this.coffeePath(worker);
+      worker.walkPath(points, facing, game.coffee.walkSpeed, () => {
+        worker.showEmote("emote:heart");
+        gameEvents.emit("coffee:arrived", { id });
+      });
+    });
+  }
+
+  /**
+   * Caminho baia -> cafeteira pelos corredores de config/game.js (coffee.aisles).
+   * O 1o fica em frente a cafeteira; os proximos fazem fila a esquerda, no corredor de cima.
+   */
+  coffeePath(worker) {
+    const { aisles, queueGap } = game.coffee;
+    const spot = this.coffeeSpot;
+    const place = this.coffeeQueue++;
+    const target =
+      place === 0 ? spot : { x: spot.x - place * queueGap, y: aisles.top, facing: "right" };
+    const aisleY = worker.facing === "down" ? aisles.top : aisles.bottom;
+
+    const points = [{ x: worker.sprite.x, y: aisleY }];
+    if (aisleY !== aisles.top) points.push({ x: spot.x, y: aisleY }, { x: spot.x, y: aisles.top });
+    points.push({ x: target.x, y: aisles.top }, { x: target.x, y: target.y });
+    return { points, facing: target.facing };
   }
 
   /** Pinta com a cor de fundo tudo que esta fora da area jogavel. */

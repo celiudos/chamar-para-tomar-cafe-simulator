@@ -1,6 +1,6 @@
 // Baseado em agent-town (MIT): components/game/entities/Worker.ts + worker/idle.ts.
-// Aqui o worker fica na cadeira: so animacao idle, nome, ponto de status e emotes aleatorios.
-// (Sem pathfinding / tarefas: a mecanica sera implementada depois.)
+// O worker fica na cadeira (animacao idle, nome, ponto de status e emotes aleatorios) ate
+// aceitar o cafe: ai levanta e anda por uma lista de pontos ate a cafeteira (walkPath).
 import {
   BUBBLE_Y_OFFSET,
   EMOTE_ANIMS,
@@ -23,9 +23,12 @@ import { buildSpriteFrames } from "./MapHelpers.js";
 import { ChatBubble } from "./ChatBubble.js";
 
 const STATUS_COLORS = { idle: 0x888888, working: 0xfacc15, done: 0x22c55e, failed: 0xef4444 };
+/** Andando, fica acima da camada "overhead" (encosto das cadeiras, profundidade 10). */
+const WALK_DEPTH = 11;
+const SEATED_DEPTH = 5;
 
 export class Worker {
-  /** `character` e o objeto de config/characters.js (nome, genero, falas, ...). */
+  /** `character` e o objeto de config/characters.js (nome, genero, persona, ...). */
   constructor(scene, x, y, spriteKey, seatId, character, facing = "up") {
     this.scene = scene;
     this.seatId = seatId;
@@ -36,12 +39,14 @@ export class Worker {
     this.status = "idle";
     this.currentEmoteKey = null;
     this.timer = null;
+    /** true depois que levantou da cadeira (andando ou ja no cafe). */
+    this.leftSeat = false;
     const label = this.label;
 
     this.ensureAnims(scene, spriteKey);
 
     this.sprite = scene.physics.add.sprite(x, y, spriteKey, 0);
-    this.sprite.setDepth(5);
+    this.sprite.setDepth(SEATED_DEPTH);
     this.sprite.body.setSize(FRAME_WIDTH * BODY_SIZE_RATIO_W, FRAME_HEIGHT * BODY_SIZE_RATIO_H);
     this.sprite.body.setOffset(FRAME_WIDTH * BODY_OFFSET_RATIO_X, FRAME_HEIGHT * BODY_OFFSET_RATIO_Y);
     this.sprite.body.allowGravity = false;
@@ -139,24 +144,79 @@ export class Worker {
     });
   }
 
+  /** Para o ciclo de emotes aleatorios (durante a conversa, a caminhada...). */
+  pauseActivities() {
+    this.timer?.remove(false);
+    this.timer = null;
+  }
+
+  /** Retoma o ciclo de emotes aleatorios depois de `delay` ms. */
+  resumeActivities(delay = Phaser.Math.Between(WANDER_MIN_DELAY, WANDER_MAX_DELAY)) {
+    this.pauseActivities();
+    this.timer = this.scene.time.delayedCall(delay, () => this.nextActivity());
+  }
+
   /** Mostra um balao de fala sobre o personagem (substitui o emote atual). */
   showBubble(message, ttl = 5000) {
     this.hideEmote();
     this.bubble.show(message, this.sprite.x, this.sprite.y - FRAME_HEIGHT * BUBBLE_Y_OFFSET, ttl);
   }
 
-  /** Sorteia uma fala de `character.dialogue[kind]`. */
-  pickLine(kind) {
-    const lines = this.character.dialogue?.[kind];
-    return lines?.length ? Phaser.Utils.Array.GetRandom(lines) : "...";
+  /**
+   * Levanta e anda pelos pontos `points` ({ x, y } em px do mundo) a `speed` px/s.
+   * Termina parado, virado para `facing`, e chama `onArrive`.
+   */
+  walkPath(points, facing, speed, onArrive) {
+    this.pauseActivities();
+    this.hideEmote();
+    this.leftSeat = true;
+    // Sem corpo fisico no caminho: nao empurra o chefe nem fica preso nos moveis.
+    this.sprite.body.enable = false;
+    this.sprite.setDepth(WALK_DEPTH);
+
+    const step = (i) => {
+      if (i >= points.length) {
+        this.facing = facing;
+        this.sprite.anims.play(`${this.spriteKey}:idle-${facing}`);
+        this.sprite.setDepth(SEATED_DEPTH);
+        this.sprite.body.enable = true;
+        this.sprite.body.reset(this.sprite.x, this.sprite.y);
+        onArrive?.();
+        return;
+      }
+      const { x, y } = points[i];
+      const dx = x - this.sprite.x;
+      const dy = y - this.sprite.y;
+      const dist = Math.hypot(dx, dy);
+      if (dist < 1) {
+        step(i + 1);
+        return;
+      }
+      const dir = Math.abs(dx) > Math.abs(dy) ? (dx < 0 ? "left" : "right") : dy < 0 ? "up" : "down";
+      this.sprite.anims.play(`${this.spriteKey}:walk-${dir}`, true);
+      this.scene.tweens.add({
+        targets: this.sprite,
+        x,
+        y,
+        duration: (dist / speed) * 1000,
+        onComplete: () => step(i + 1),
+      });
+    };
+    step(0);
   }
 
-  /** Mantem o balao acompanhando o personagem (chamar a cada frame). */
+  /** Mantem nome, status, emote e balao acompanhando o personagem (chamar a cada frame). */
   update() {
-    this.bubble.updatePosition(this.sprite.x, this.sprite.y - FRAME_HEIGHT * BUBBLE_Y_OFFSET);
+    const { x, y } = this.sprite;
+    const nameY = y + FRAME_HEIGHT / 2 + 2;
+    this.nameTag.setPosition(x, nameY);
+    this.statusDot.setPosition(x - this.nameTag.width / 2 - 6, nameY + 4);
+    this.emoteSprite.setPosition(x, y - FRAME_HEIGHT * EMOTE_Y_OFFSET);
+    this.bubble.updatePosition(x, y - FRAME_HEIGHT * BUBBLE_Y_OFFSET);
   }
 
   destroy() {
+    this.scene.tweens.killTweensOf(this.sprite);
     this.timer?.destroy();
     this.bubble.destroy();
     this.emoteSprite.removeAllListeners();

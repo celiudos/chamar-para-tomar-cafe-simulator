@@ -1,6 +1,7 @@
-import { game as gameCfg } from "../config/index.js";
+import { game as gameCfg, characters } from "../config/index.js";
 import OfficeScene from "./OfficeScene.js";
 import { initHud } from "./hud.js";
+import { loadPersonas } from "./personas.js";
 
 // Identidade do jogo vinda de config/game.js
 document.title = gameCfg.name;
@@ -37,7 +38,8 @@ async function waitForFonts() {
   await Promise.race([document.fonts.load('8px "Press Start 2P"').catch(() => {}), timeout]);
 }
 
-await waitForFonts();
+// Fontes e personas (/personas/*.md) carregam em paralelo antes do jogo comecar.
+await Promise.all([waitForFonts(), loadPersonas(characters)]);
 initHud();
 const phaserGame = new Phaser.Game(gameConfig);
 

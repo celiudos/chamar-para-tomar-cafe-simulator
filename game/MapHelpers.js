@@ -41,6 +41,12 @@ export function parseSpawns(map) {
   return { bossSpawn, workerSpawns };
 }
 
+/** Ponto de interesse `name` da camada "pois" -> { x, y, facing } (ou null). */
+export function findPoi(map, name) {
+  const obj = map.getObjectLayer("pois")?.objects.find((o) => o.name === name);
+  return obj ? { x: obj.x, y: obj.y, facing: getFacing(obj) } : null;
+}
+
 /** Retangulos da camada "collisions" viram corpos estaticos invisiveis. */
 export function buildCollisionRects(map, group) {
   const layer = map.getObjectLayer("collisions");

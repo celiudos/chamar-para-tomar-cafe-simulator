@@ -25,6 +25,21 @@ const SEATS = [
 // Chefe: de pe no corredor a direita das baias (posicao no mapa ORIGINAL).
 const BOSS = { name: "boss", x: 650, y: 410, facing: "left" };
 
+// Copa: cafeteira ao lado do bebedouro, no lugar do vaso de planta (que vai para o lugar do armario).
+// Posicoes [coluna, linha] no mapa ORIGINAL; tiles [linha, coluna] da tileset "modern_office".
+const COFFEE_CORNER = [
+  { cell: [13, 4], layer: "walls", tile: null }, // tira o vaso daqui...
+  { cell: [13, 5], layer: "walls", tile: null },
+  { cell: [14, 4], layer: "ground", tile: [10, 6] }, // ...e coloca no lugar do armario
+  { cell: [14, 5], layer: "ground", tile: [11, 6] },
+  { cell: [13, 4], layer: "ground", tile: [33, 14] }, // cafeteira (parte de cima)
+  { cell: [13, 5], layer: "ground", tile: [34, 14] }, // cafeteira (base)
+];
+// Em pixels do mapa ORIGINAL: corpo da cafeteira (colisao) e o ponto em frente a ela,
+// para onde o personagem convencido anda (objeto "coffee" da camada "pois").
+const COFFEE_COLLISION = { x: 642, y: 245, width: 30, height: 22 };
+const COFFEE_POI = { name: "coffee", x: 657, y: 238, facing: "up" };
+
 const src = JSON.parse(readFileSync(SRC, "utf8"));
 const T = src.tilewidth; // 48
 const W = CROP.x1 - CROP.x0 + 1;
@@ -66,6 +81,11 @@ for (const { cells, gid } of CLOSE) {
     for (const [name, data] of cropped) data[i] = name === "floor" ? gid : 0;
   }
 }
+const officeTiles = src.tilesets.find((ts) => ts.name === "modern_office");
+for (const { cell: [col, row], layer, tile } of COFFEE_CORNER) {
+  const gid = tile ? officeTiles.firstgid + tile[0] * officeTiles.columns + tile[1] : 0;
+  cropped.get(layer)[(row - CROP.y0) * W + (col - CROP.x0)] = gid;
+}
 for (const data of cropped.values()) for (const gid of data) if (gid) usedGids.add(gid & 0x1fffffff);
 
 const layers = src.layers.map((layer) => {
@@ -87,6 +107,7 @@ const layers = src.layers.map((layer) => {
         if (x1 <= x0 || y1 <= y0) return [];
         return [{ ...o, x: x0 - left, y: y0 - top, width: x1 - x0, height: y1 - y0 }];
       });
+      objects.push({ id: nextObjectId++, name: "cafeteira", type: "", rotation: 0, visible: true, ...shift(COFFEE_COLLISION) });
       break;
     case "props":
     case "props-over":
@@ -96,6 +117,21 @@ const layers = src.layers.map((layer) => {
       break;
     case "pois":
       objects = objects.filter((o) => inside(o.x, o.y)).map(shift);
+      objects.push(
+        shift({
+          id: nextObjectId++,
+          name: COFFEE_POI.name,
+          type: "",
+          point: true,
+          rotation: 0,
+          visible: true,
+          width: 0,
+          height: 0,
+          x: COFFEE_POI.x,
+          y: COFFEE_POI.y,
+          properties: [{ name: "facing", type: "string", value: COFFEE_POI.facing }],
+        }),
+      );
       break;
     case "spawns": {
       const mk = (s) => ({

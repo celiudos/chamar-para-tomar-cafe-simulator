@@ -12,14 +12,9 @@ import { gameEvents } from "./events.js";
 
 /** Comportamento de cada opcao do menu. `worker` e o personagem alvo. */
 const handlers = {
+  /** Abre o chat do HUD com este personagem (conversa com o Ollama em game/conversation.js). */
   talk(worker) {
-    worker.showBubble(worker.pickLine("talk"), game.interaction.bubbleMs);
-  },
-
-  invite(worker) {
-    const accepted = Math.random() < 0.5;
-    worker.showBubble(worker.pickLine(accepted ? "inviteAccept" : "inviteDecline"), game.interaction.bubbleMs);
-    return { accepted };
+    gameEvents.emit("chat:open", { characterId: worker.character.id });
   },
 
   cancel() {},
