@@ -1,23 +1,9 @@
-// Configuracao do jogo, portada de geezerrrr/agent-town (MIT):
+// Constantes do motor, portadas de geezerrrr/agent-town (MIT):
 // lib/constants.ts, components/game/config/{animations,emotes}.ts
+// Valores do jogo (nome, mapa, camera, audio, personagens) ficam em /config.
 
-export const GAME_NAME = "chamar-para-tomar-cafe-simulator";
-
-/** Os assets ficam em /public (servidor estatico serve a raiz do projeto). */
+/** Os assets ficam em /public (o servidor serve a raiz do projeto). */
 export const PUBLIC_PATH = "/public";
-
-// ── Canvas ────────────────────────────────────────────────
-export const GAME_WIDTH = 1280;
-export const GAME_HEIGHT = 720;
-
-// ── Camera ────────────────────────────────────────────────
-export const CAMERA_LERP = 0.1;
-export const ZOOM_SENSITIVITY = 0.001;
-export const ZOOM_DEFAULT = 0.82;
-export const ZOOM_MIN = 0.5;
-export const ZOOM_MAX = 2;
-export const CAMERA_DRAG_THRESHOLD = 3;
-export const BG_COLOR = "#1a1814";
 
 // ── Sprites de personagem (48x96, 56 colunas) ─────────────
 // Linha 1: idle  - right(6) up(6) left(6) down(6)
@@ -36,24 +22,12 @@ export const BODY_OFFSET_RATIO_Y = 0.75;
 
 export const DIRECTIONS = ["right", "up", "left", "down"];
 
-export const BOSS_SPRITE_KEY = "character_09";
-export const BOSS_SPRITE_PATH = `${PUBLIC_PATH}/characters/Premade_Character_48x48_09.png`;
-
-const ch = (n) => `${PUBLIC_PATH}/characters/Premade_Character_48x48_${n}.png`;
-
-/** Personagens que ocupam as cadeiras (na ordem das cadeiras do mapa). */
-export const WORKER_SPRITES = [
-  { key: "character_02", path: ch("02"), label: "Alice", roleTitle: "Worker" },
-  { key: "character_03", path: ch("03"), label: "Bob", roleTitle: "Worker" },
-  { key: "character_04", path: ch("04"), label: "Carol", roleTitle: "Worker" },
-  { key: "character_05", path: ch("05"), label: "Dave", roleTitle: "Worker" },
-  { key: "character_01", path: ch("01"), label: "Eve", roleTitle: "Worker" },
-  { key: "character_06", path: ch("06"), label: "Frank", roleTitle: "Worker" },
-];
+export const CAMERA_DRAG_THRESHOLD = 3;
+export const ZOOM_SENSITIVITY = 0.001;
 
 /**
  * Anima "idle"/"walk" de uma linha da sheet.
- * Sem prefixo => chaves legadas do boss ("idle-down"); com prefixo => "<key>:idle-down".
+ * Sem prefixo => chaves legadas do jogador ("idle-down"); com prefixo => "<key>:idle-down".
  */
 export function makeAnims(spriteKey, prefix, row, frameRate) {
   return DIRECTIONS.map((dir, i) => ({
@@ -74,6 +48,8 @@ export const EMOTE_SHEET_KEY = "emotes";
 export const EMOTE_SHEET_PATH = `${PUBLIC_PATH}/sprites/emotes_48x48.png`;
 export const EMOTE_FRAME_SIZE = 48;
 export const EMOTE_Y_OFFSET = 0.55;
+export const BUBBLE_Y_OFFSET = 0.45;
+export const PROMPT_Y_OFFSET = 0.5;
 
 export const EMOTE_ANIMS = [
   { key: "emote:sleep", frames: [56, 57], frameRate: 2, repeat: -1 },
@@ -110,13 +86,12 @@ export const SEAT_ACTIVITIES = [
   { emote: "emote:angry", minDuration: 2000, maxDuration: 4000 },
 ];
 
-// ── Portas animadas (posicoes fixas do mapa office2) ──────
-export const DOOR_POSITIONS = [
-  { x: 528, y: 528 },
-  { x: 960, y: 528 },
-];
-
-// ── Persistencia ──────────────────────────────────────────
-export const LS_BGM_VOLUME = "chamar-para-tomar-cafe:bgm-volume";
-export const DEFAULT_BGM_VOLUME = 0.45;
-export const BGM_SRC = `${PUBLIC_PATH}/audio/bgm.mp3`;
+// ── Estilo do "Press E" (igual ao original) ───────────────
+export const PRESS_E_STYLE = {
+  fontFamily: '"SF Mono", "Cascadia Code", Consolas, "Liberation Mono", Menlo, monospace',
+  fontSize: "14px",
+  color: "#c9a227",
+  backgroundColor: "rgba(37, 34, 25, 0.95)",
+  padding: { x: 8, y: 4 },
+  align: "center",
+};

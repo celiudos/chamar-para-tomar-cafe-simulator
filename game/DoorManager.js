@@ -1,5 +1,5 @@
 // Portado de agent-town (MIT): components/game/systems/DoorManager.ts
-import { DOOR_POSITIONS } from "./config.js";
+import { game } from "../config/index.js";
 
 export class DoorManager {
   constructor(scene, player, getWorkers) {
@@ -10,6 +10,7 @@ export class DoorManager {
   }
 
   initDoors() {
+    if (game.map.doors.length === 0) return;
     if (!this.scene.anims.exists("door-open")) {
       this.scene.anims.create({
         key: "door-open",
@@ -24,7 +25,7 @@ export class DoorManager {
         repeat: 0,
       });
     }
-    for (const pos of DOOR_POSITIONS) {
+    for (const pos of game.map.doors) {
       const sprite = this.scene.add.sprite(pos.x, pos.y, "anim-door", 0).setOrigin(0, 0).setDepth(4);
       this.doors.push({ sprite, x: pos.x + 24, y: pos.y + 48, open: false });
     }

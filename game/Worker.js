@@ -2,6 +2,7 @@
 // Aqui o worker fica na cadeira: so animacao idle, nome, ponto de status e emotes aleatorios.
 // (Sem pathfinding / tarefas: a mecanica sera implementada depois.)
 import {
+  BUBBLE_Y_OFFSET,
   EMOTE_ANIMS,
   EMOTE_SHEET_KEY,
   EMOTE_Y_OFFSET,
@@ -17,21 +18,25 @@ import {
   BODY_OFFSET_RATIO_X,
   BODY_OFFSET_RATIO_Y,
   makeAnims,
-} from "./config.js";
+} from "./constants.js";
 import { buildSpriteFrames } from "./MapHelpers.js";
+import { ChatBubble } from "./ChatBubble.js";
 
 const STATUS_COLORS = { idle: 0x888888, working: 0xfacc15, done: 0x22c55e, failed: 0xef4444 };
 
 export class Worker {
-  constructor(scene, x, y, spriteKey, seatId, label, facing = "up") {
+  /** `character` e o objeto de config/characters.js (nome, genero, falas, ...). */
+  constructor(scene, x, y, spriteKey, seatId, character, facing = "up") {
     this.scene = scene;
     this.seatId = seatId;
-    this.label = label;
+    this.character = character;
+    this.label = character.name;
     this.spriteKey = spriteKey;
     this.facing = facing;
     this.status = "idle";
     this.currentEmoteKey = null;
     this.timer = null;
+    const label = this.label;
 
     this.ensureAnims(scene, spriteKey);
 
@@ -64,6 +69,7 @@ export class Worker {
       .setDepth(22)
       .setVisible(false);
     this.registerEmoteAnims();
+    this.bubble = new ChatBubble(scene);
 
     const initial = Phaser.Math.Between(WANDER_INITIAL_MIN, WANDER_INITIAL_MAX);
     this.timer = scene.time.delayedCall(initial, () => this.nextActivity());
@@ -99,6 +105,7 @@ export class Worker {
 
   showEmote(key) {
     if (this.currentEmoteKey === key) return;
+    this.bubble.hide();
     this.emoteSprite.removeAllListeners("animationcomplete");
     this.currentEmoteKey = key;
     this.emoteSprite.setVisible(true);
@@ -132,8 +139,26 @@ export class Worker {
     });
   }
 
+  /** Mostra um balao de fala sobre o personagem (substitui o emote atual). */
+  showBubble(message, ttl = 5000) {
+    this.hideEmote();
+    this.bubble.show(message, this.sprite.x, this.sprite.y - FRAME_HEIGHT * BUBBLE_Y_OFFSET, ttl);
+  }
+
+  /** Sorteia uma fala de `character.dialogue[kind]`. */
+  pickLine(kind) {
+    const lines = this.character.dialogue?.[kind];
+    return lines?.length ? Phaser.Utils.Array.GetRandom(lines) : "...";
+  }
+
+  /** Mantem o balao acompanhando o personagem (chamar a cada frame). */
+  update() {
+    this.bubble.updatePosition(this.sprite.x, this.sprite.y - FRAME_HEIGHT * BUBBLE_Y_OFFSET);
+  }
+
   destroy() {
     this.timer?.destroy();
+    this.bubble.destroy();
     this.emoteSprite.removeAllListeners();
     this.emoteSprite.destroy();
     this.sprite.destroy();

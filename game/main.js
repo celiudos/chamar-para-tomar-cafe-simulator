@@ -1,14 +1,20 @@
+import { game as gameCfg } from "../config/index.js";
 import OfficeScene from "./OfficeScene.js";
 import { initHud } from "./hud.js";
-import { BG_COLOR, GAME_HEIGHT, GAME_WIDTH } from "./config.js";
+
+// Identidade do jogo vinda de config/game.js
+document.title = gameCfg.name;
+document.documentElement.lang = gameCfg.language;
+const logo = document.querySelector(".layout-topbar__logo");
+if (logo) logo.textContent = gameCfg.name;
 
 // Portado de agent-town (MIT): components/game/config.ts
 const gameConfig = {
   type: Phaser.AUTO,
   parent: "game",
-  backgroundColor: BG_COLOR,
-  width: GAME_WIDTH,
-  height: GAME_HEIGHT,
+  backgroundColor: gameCfg.display.backgroundColor,
+  width: gameCfg.display.width,
+  height: gameCfg.display.height,
   pixelArt: true,
   antialias: false,
   roundPixels: true,
@@ -33,5 +39,7 @@ async function waitForFonts() {
 
 await waitForFonts();
 initHud();
-// eslint-disable-next-line no-new
-new Phaser.Game(gameConfig);
+const phaserGame = new Phaser.Game(gameConfig);
+
+// Referencia para depuracao no console do navegador (ex.: __GAME__.scene.scenes[0]).
+globalThis.__GAME__ = phaserGame;

@@ -1,45 +1,56 @@
 // Portado de agent-town (MIT): components/game/systems/CameraController.ts
-import {
-  BG_COLOR,
-  CAMERA_DRAG_THRESHOLD,
-  CAMERA_LERP,
-  ZOOM_DEFAULT,
-  ZOOM_MAX,
-  ZOOM_MIN,
-  ZOOM_SENSITIVITY,
-} from "./config.js";
+// Adaptado: zoom inicial ajustado ao tamanho do mapa e valores vindos de config/game.js.
+import { game } from "../config/index.js";
+import { CAMERA_DRAG_THRESHOLD, ZOOM_SENSITIVITY } from "./constants.js";
 
 export class CameraController {
-  constructor(scene, playerSprite, mapWidth, mapHeight) {
+  /** `area` = { x, y, width, height } da regiao visivel/jogavel (em px do mundo). */
+  constructor(scene, playerSprite, area) {
     this.scene = scene;
     this.playerSprite = playerSprite;
-    this.mapWidth = mapWidth;
-    this.mapHeight = mapHeight;
+    this.area = area;
+    this.mapWidth = area.width;
+    this.mapHeight = area.height;
     this.cameraDragging = false;
     this.cameraFollowing = true;
+    /** true depois que o jogador mexe no zoom com a roda do mouse. */
+    this.userZoomed = false;
+  }
+
+  /** Zoom em que o mapa inteiro cabe na janela (com margem para o HUD). */
+  fitZoom() {
+    const { fitMargin, zoomMin, zoomMax } = game.camera;
+    const cam = this.scene.cameras.main;
+    const z = Math.min(cam.width / this.mapWidth, cam.height / this.mapHeight) * fitMargin;
+    return Phaser.Math.Clamp(z, zoomMin, zoomMax);
   }
 
   init() {
     const cam = this.scene.cameras.main;
-    cam.setBackgroundColor(BG_COLOR);
+    cam.setBackgroundColor(game.display.backgroundColor);
     cam.setRoundPixels(true);
-    cam.setZoom(ZOOM_DEFAULT);
+    cam.setZoom(game.camera.fitToMap ? this.fitZoom() : 0.82);
     this.updateCameraBounds();
-    cam.startFollow(this.playerSprite, true, CAMERA_LERP, CAMERA_LERP);
+    cam.startFollow(this.playerSprite, true, game.camera.lerp, game.camera.lerp);
 
-    this.scene.scale.on("resize", () => this.updateCameraBounds());
+    this.scene.scale.on("resize", () => {
+      if (game.camera.fitToMap && !this.userZoomed) cam.setZoom(this.fitZoom());
+      this.updateCameraBounds();
+    });
     this.initWheel(cam);
     this.initCameraDrag(cam);
   }
 
   initWheel(cam) {
     const canvas = this.scene.game.canvas;
+    const { zoomMin, zoomMax } = game.camera;
     const onWheel = (e) => {
       e.preventDefault();
       const delta = e.ctrlKey ? e.deltaY * 3 : e.deltaY;
       const oldZoom = cam.zoom;
-      const newZoom = Phaser.Math.Clamp(oldZoom - delta * ZOOM_SENSITIVITY, ZOOM_MIN, ZOOM_MAX);
+      const newZoom = Phaser.Math.Clamp(oldZoom - delta * ZOOM_SENSITIVITY, zoomMin, zoomMax);
       if (newZoom === oldZoom) return;
+      this.userZoomed = true;
 
       if (!this.cameraFollowing) {
         const sx = e.offsetX / cam.scaleManager.displayScale.x;
@@ -91,7 +102,7 @@ export class CameraController {
 
   resumeCameraFollow() {
     if (!this.cameraFollowing) {
-      this.scene.cameras.main.startFollow(this.playerSprite, true, CAMERA_LERP, CAMERA_LERP);
+      this.scene.cameras.main.startFollow(this.playerSprite, true, game.camera.lerp, game.camera.lerp);
       this.cameraFollowing = true;
     }
   }
@@ -101,8 +112,9 @@ export class CameraController {
     const cam = this.scene.cameras.main;
     const viewW = cam.width / cam.zoom;
     const viewH = cam.height / cam.zoom;
-    const bx = viewW > this.mapWidth ? -(viewW - this.mapWidth) / 2 : 0;
-    const by = viewH > this.mapHeight ? -(viewH - this.mapHeight) / 2 : 0;
+    const { x, y } = this.area;
+    const bx = viewW > this.mapWidth ? x - (viewW - this.mapWidth) / 2 : x;
+    const by = viewH > this.mapHeight ? y - (viewH - this.mapHeight) / 2 : y;
     const bw = viewW > this.mapWidth ? viewW : this.mapWidth;
     const bh = viewH > this.mapHeight ? viewH : this.mapHeight;
     cam.setBounds(bx, by, bw, bh);

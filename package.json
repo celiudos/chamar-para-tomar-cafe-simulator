@@ -1,17 +1,19 @@
 {
   "name": "chamar-para-tomar-cafe-simulator",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "private": true,
-  "description": "chamar-para-tomar-cafe-simulator: interface pixel-art no estilo Agent Town (cenario + personagens) feita com Phaser 3. Apenas UI, sem mecanica.",
+  "description": "Simulador pixel-art de escritorio: o chefe percorre as baias e chama a equipe para tomar cafe.",
+  "author": "Marcelo Note",
   "type": "module",
   "scripts": {
-    "start": "http-server . -p 3000 -c-1 -o",
-    "dev": "http-server . -p 3000 -c-1 -o"
+    "start": "live-server . --port=3000 --open=/ --watch=index.html,style.css,game,config,public/maps --ignore=node_modules --wait=200",
+    "dev": "npm start",
+    "build:map": "node scripts/build-baias-map.mjs"
   },
   "dependencies": {
     "phaser": "3.90.0"
   },
   "devDependencies": {
-    "http-server": "14.1.1"
+    "live-server": "1.2.2"
   }
 }

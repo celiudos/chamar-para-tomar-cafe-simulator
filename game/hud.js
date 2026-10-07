@@ -1,16 +1,13 @@
 // HUD em DOM puro, reproduzindo o layout do Agent Town:
 // topo: logo | pills dos agentes | botoes de ferramentas
 // base: pills de status (esq.) + dock de chat (dir.)
-import {
-  BGM_SRC,
-  DEFAULT_BGM_VOLUME,
-  FRAME_HEIGHT,
-  FRAME_WIDTH,
-  LS_BGM_VOLUME,
-  PORTRAIT_FRAME_INDEX,
-  SHEET_COLUMNS,
-} from "./config.js";
+import { game } from "../config/index.js";
+import { FRAME_HEIGHT, FRAME_WIDTH, PORTRAIT_FRAME_INDEX, SHEET_COLUMNS } from "./constants.js";
 import { gameEvents } from "./events.js";
+
+const BGM_SRC = game.audio.bgm;
+const DEFAULT_BGM_VOLUME = game.audio.defaultVolume;
+const LS_BGM_VOLUME = game.audio.storageKey;
 
 const ICON = "/public/ui/icons";
 
@@ -113,7 +110,9 @@ function workersPanel(seats) {
           <span>${esc(seat.assigned ? seat.label : "Vacant Seat")}</span>
         </div>
         <div class="hud-workers__task">${
-          seat.assigned ? `${esc(seat.roleTitle ?? "Worker")} waiting at desk` : "Assign a crew member to this seat"
+          seat.assigned
+            ? `${esc(seat.roleTitle ?? "Worker")} &middot; ${seat.gender === "female" ? "F" : "M"} &middot; at desk`
+            : "Assign a crew member to this seat"
         }</div>
       </div>`,
     )
@@ -171,7 +170,7 @@ function chatPanelHtml(messages) {
     : '<div class="hud-chat__system">Say hi! (chat local, sem agentes conectados)</div>';
   return flyout({
     title: "Chat",
-    subtitle: "chamar-para-tomar-cafe",
+    subtitle: game.name,
     bodyClass: "hud-flyout__body--chat",
     body: `
       <div class="hud-chat-layout">

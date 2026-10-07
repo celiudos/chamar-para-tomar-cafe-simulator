@@ -1,5 +1,5 @@
 // Portado de agent-town (MIT): components/game/utils/MapHelpers.ts
-import { FRAME_WIDTH, FRAME_HEIGHT, SHEET_COLUMNS } from "./config.js";
+import { FRAME_WIDTH, FRAME_HEIGHT, SHEET_COLUMNS } from "./constants.js";
 
 /** Fatia a sheet do personagem em frames numerados (linha * 56 + coluna). */
 export function buildSpriteFrames(scene, key) {

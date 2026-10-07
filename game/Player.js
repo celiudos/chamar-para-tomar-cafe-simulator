@@ -1,7 +1,6 @@
 // Portado de agent-town (MIT): components/game/entities/Player.ts
 import {
   ALL_ANIMS,
-  BOSS_SPRITE_KEY,
   FRAME_HEIGHT,
   FRAME_WIDTH,
   MOVE_SPEED,
@@ -9,17 +8,20 @@ import {
   BODY_SIZE_RATIO_H,
   BODY_OFFSET_RATIO_X,
   BODY_OFFSET_RATIO_Y,
-} from "./config.js";
+} from "./constants.js";
 
 export class Player {
-  constructor(scene, x, y, facing = "left") {
-    this.facing = facing;
+  constructor(scene, x, y, facing, spriteKey) {
+    this.facing = facing ?? "down";
+    this.spriteKey = spriteKey;
     this.arrow = null;
     this.hasMovedOnce = false;
+    /** Quando true (menu aberto), o jogador fica parado. */
+    this.locked = false;
 
     this.createAnimations(scene);
 
-    this.sprite = scene.physics.add.sprite(x, y, BOSS_SPRITE_KEY, 0);
+    this.sprite = scene.physics.add.sprite(x, y, spriteKey, 0);
     this.sprite.setDepth(5);
     this.sprite.body.setSize(FRAME_WIDTH * BODY_SIZE_RATIO_W, FRAME_HEIGHT * BODY_SIZE_RATIO_H);
     this.sprite.body.setOffset(FRAME_WIDTH * BODY_OFFSET_RATIO_X, FRAME_HEIGHT * BODY_OFFSET_RATIO_Y);
@@ -63,7 +65,7 @@ export class Player {
     if (scene.anims.exists("idle-down")) return;
     for (const anim of ALL_ANIMS) {
       const frames = [];
-      for (let i = anim.start; i <= anim.end; i++) frames.push({ key: BOSS_SPRITE_KEY, frame: i });
+      for (let i = anim.start; i <= anim.end; i++) frames.push({ key: this.spriteKey, frame: i });
       scene.anims.create({ key: anim.key, frames, frameRate: anim.frameRate, repeat: anim.repeat });
     }
   }
@@ -73,15 +75,24 @@ export class Player {
     return v.x !== 0 || v.y !== 0;
   }
 
+  /** Vira o personagem na direcao do ponto (eixo dominante). */
+  faceTo(x, y) {
+    const dx = x - this.sprite.x;
+    const dy = y - this.sprite.y;
+    this.facing = Math.abs(dx) > Math.abs(dy) ? (dx < 0 ? "left" : "right") : dy < 0 ? "up" : "down";
+  }
+
   update() {
     const body = this.sprite.body;
     let vx = 0;
     let vy = 0;
 
-    if (this.cursors.left.isDown || this.wasd.A.isDown) vx = -MOVE_SPEED;
-    else if (this.cursors.right.isDown || this.wasd.D.isDown) vx = MOVE_SPEED;
-    if (this.cursors.up.isDown || this.wasd.W.isDown) vy = -MOVE_SPEED;
-    else if (this.cursors.down.isDown || this.wasd.S.isDown) vy = MOVE_SPEED;
+    if (!this.locked) {
+      if (this.cursors.left.isDown || this.wasd.A.isDown) vx = -MOVE_SPEED;
+      else if (this.cursors.right.isDown || this.wasd.D.isDown) vx = MOVE_SPEED;
+      if (this.cursors.up.isDown || this.wasd.W.isDown) vy = -MOVE_SPEED;
+      else if (this.cursors.down.isDown || this.wasd.S.isDown) vy = MOVE_SPEED;
+    }
 
     if (vx !== 0 && vy !== 0) {
       vx *= Math.SQRT1_2;
