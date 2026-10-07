@@ -7,7 +7,7 @@ export const game = {
   name: "chamar-para-tomar-cafe-simulator",
   version: "0.5.0",
   description:
-    "Simulador pixel-art de escritorio: o chefe conversa com a equipe (IA local via Ollama) e tenta convencer alguem a tomar cafe.",
+    "Simulador pixel-art de escritorio: estilo Imagem e Acao sem mimica. Cada funcionario (IA local via Ollama) da pistas e o chefe precisa adivinhar a palavra secreta.",
   author: {
     name: "Marcelo Note",
   },
@@ -134,59 +134,52 @@ export const game = {
      */
     quickReplies: [
       {
-        id: "coffee",
-        label: "Vamos tomar café?",
-        text: "Vamos tomar café?",
+        id: "clue",
+        label: "Me dá uma pista?",
+        text: "Me dá uma pista da palavra?",
         always: true,
       },
       {
-        id: "work",
-        label: "Perguntar sobre o trabalho",
-        text: "Como está o trabalho hoje? No que você está trabalhando agora?",
+        id: "start",
+        label: "Vamos jogar?",
+        text: "Oi! Vamos jogar de adivinhação? Pode começar a dar as pistas.",
       },
     ],
   },
 
   // ── Dificuldade ─────────────────────────────────────────
   // A cada carregamento, cada personagem recebe uma dificuldade sorteada (com niveis repartidos por
-  // igual entre a equipe) que muda o quao exigente ele e para aceitar o cafe e quao claras sao as pistas.
+  // igual entre a equipe) que muda o quao claras sao as pistas e quanto o personagem resiste antes de
+  // dar a pista mais forte da palavra secreta.
   difficulty: {
     /** Ordem dos niveis; a equipe recebe os niveis em rodizio (embaralhado a cada jogo). */
     levels: ["easy", "medium", "hard"],
     easy: {
       label: "Fácil",
-      /** Quantas falas do chefe (contando a atual) sao necessarias antes de aceitar. */
-      minMessages: 2,
-      /** Instrucoes para o gerador de cenarios (tela de loading). */
-      motiveGuide:
-        "UMA coisa específica que o chefe precisa dizer ou prometer, ligada à situação da pessoa.",
-      cluesGuide: "pista indireta: comenta o problema sem dizer exatamente o que o chefe deve fazer",
+      /** Quantas falas do chefe (contando a atual) ate o personagem soltar as pistas mais fortes. */
+      minMessages: 1,
+      /** Instrucoes para o gerador de pistas (tela de loading). */
+      cluesGuide: "pista bem clara, que quase entrega a palavra, mas sem dizê-la",
       /** Regra de comportamento no chat. */
-      rule: "Você está de bom humor, mas ocupado(a): só aceita quando o chefe acertar o seu motivo de verdade, não só chegar perto. Convite comum, insistência ou ordem não bastam. Se ele perguntar do seu trabalho, conte a sua situação e deixe escapar uma pista indireta; não entregue o motivo de graça.",
+      rule: "Você está animado(a) e quer que o chefe acerte logo: dê pistas bem claras e diretas sobre a palavra, quase entregando. Comemore cada palpite que chega perto. Nunca diga a palavra; só o chefe pode dizê-la.",
     },
     medium: {
       label: "Médio",
-      minMessages: 3,
-      motiveGuide:
-        "UMA coisa específica, com um detalhe concreto que o chefe precisa acertar (não vale uma versão genérica), ligada à situação da pessoa.",
-      cluesGuide:
-        "pista indireta e um pouco vaga: comenta o problema de leve, sem dizer o que o chefe deve fazer",
-      rule: "Você é neutro(a) e um pouco desconfiado(a): só aceita quando o chefe cumprir o motivo com o detalhe certo, e não na primeira vez em que ele chegar perto: antes, hesite e peça que ele seja mais específico. Convite comum, insistência, ordem ou suborno não bastam. Só dê pistas se ele se interessar pela sua situação, e sempre de forma indireta.",
+      minMessages: 2,
+      cluesGuide: "pista de meio-termo: aponta para a palavra, mas exige um pouco de raciocínio",
+      rule: "Você está brincalhão(ã) e um pouco provocador(a): dê pistas de meio-termo, que apontam para a palavra sem entregá-la. Se o chefe errar, reaja ao palpite e dê outra pista por outro ângulo. Nunca diga a palavra.",
     },
     hard: {
       label: "Difícil",
-      minMessages: 4,
-      motiveGuide:
-        "DUAS coisas que o chefe precisa cumprir juntas (por exemplo: reconhecer o problema específico E oferecer uma solução concreta). Só uma delas, ou uma versão vaga das duas, não basta.",
-      cluesGuide:
-        "pista muito vaga e curta, que só faz sentido para quem presta muita atenção e já entendeu metade do motivo",
-      rule: "Você é desconfiado(a), teimoso(a) e exigente: só aceita quando o chefe cumprir TODAS as partes do motivo, com detalhes concretos, e nunca nas primeiras vezes em que ele acertar: hesite, questione e peça uma garantia antes de ceder. Convite comum, insistência, ordem ou suborno nunca bastam. Dê só pistas vagas, soltas, e apenas se o chefe perguntar da sua situação.",
+      minMessages: 3,
+      cluesGuide: "pista vaga e curta, que só faz sentido para quem presta muita atenção",
+      rule: "Você é enigmático(a) e gosta do desafio: dê só pistas vagas e curtas, uma de cada vez, e faça o chefe trabalhar para acertar. Nas primeiras falas, dê as pistas mais obscuras; só solte uma pista mais clara se ele insistir. Nunca diga a palavra.",
     },
   },
 
   // ── Tela de loading ─────────────────────────────────────
-  // Antes do jogo comecar, o Ollama complementa cada persona (personas/*.md) com a situacao agora,
-  // o motivo para aceitar o cafe e as pistas. Se falhar, usa o cenario pronto do proprio .md.
+  // Antes do jogo comecar, o Ollama complementa cada persona (personas/*.md) com a palavra secreta,
+  // a categoria (objeto ou política) e as pistas. Se falhar, usa o cenario pronto do proprio .md.
   loading: {
     /** Tempo maximo (ms) para gerar o cenario de UM personagem antes de usar o cenario pronto. */
     timeoutMs: 45000,
@@ -195,12 +188,12 @@ export const game = {
     /** Temperatura da geracao (mais alta que a do chat: queremos variedade). */
     temperature: 0.8,
     tips: [
-      "Preparando a cafeteira...",
-      "Moendo os grãos...",
+      "Preparando as pistas...",
+      "Pensando em palavras secretas...",
       "Acordando a equipe...",
-      "Cada pessoa tem um motivo diferente para aceitar o café.",
-      "Pergunte sobre o trabalho: as pessoas contam o que as prende na mesa.",
-      "Convite comum, insistência e ordem raramente funcionam.",
+      "Cada pessoa esconde uma palavra: um objeto ou uma opinião política.",
+      "Pergunte sobre o trabalho: as pistas aparecem no meio da conversa.",
+      "Para vencer, mencione a palavra secreta no meio da sua resposta.",
     ],
   },
 

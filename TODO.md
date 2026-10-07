@@ -10,7 +10,11 @@ Leia o `CLAUDE.md` para entender o projeto
 
 A ideia é ultizar um cenário e UI similar ao `Agent Town`. Pode reaproveitar o código do github, se possível.
 
-# Instrução
+Altere a dinâmica de o personagem conseguir aceitar a tomar café.
+Faça algo parecido com o jogo de tabuleiro chamado "Imagem e Ação".
+O jogador deve tentar conseguir adivinhar a palavra que o personagem está querendo que o jogador mencione. O jogador pode mencionar a palavra no meio de suas respostas e ser aceito.
+O personagem não vai fazer mímica, mas vai dar pistas contextuais no diálogo.
+Adapte o diálogo para que fique conforme o contexto do jogo e pareça natural.
+Para adivinhar, pode ser apenas objetos ou opiniões políticas de "esquerda" (liberal) ou "direita" (conservador).
 
-O jogo está muito fácil. Após 2 ou 3 diálogos, o personagem já aceita ir tomar café.
-Ajuste para ficar um pouco mais difícil, de modo que o jogador tenha que descobrir a melhor forma de convencer cada personagem.
+# Instrução

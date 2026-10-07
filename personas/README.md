@@ -3,12 +3,16 @@
 Cada personagem de `config/characters.js` aponta para um arquivo desta pasta
 (`persona: "bob"` → `personas/bob.md`).
 
+O jogo é uma adivinhação no estilo "Imagem e Ação", mas **sem mímica**: cada personagem tem uma
+**palavra secreta** e vai soltando **pistas contextuais no diálogo**. O chefe vence quando
+**menciona a palavra secreta** no meio de uma mensagem.
+
 A persona tem duas partes:
 
 - **Fixa** (este arquivo + `config/characters.js`): profissão, gênero, personalidade, jeito de
   falar e interesses. Não muda entre partidas.
-- **Dinâmica** (criada na tela de loading, `game/scenario.js`): **dificuldade**, **situação
-  agora**, **motivo para aceitar o café** e **pistas que o personagem pode dar**. A cada
+- **Dinâmica** (criada na tela de loading, `game/scenario.js`): **dificuldade**, **palavra
+  secreta**, **categoria** (`objeto` ou `política`) e **pistas que o personagem dá**. A cada
   carregamento o Ollama inventa um complemento novo para cada pessoa, e as dificuldades
   (fácil / médio / difícil, ver `config/game.js` → `difficulty`) são sorteadas e repartidas
   por igual entre a equipe.
@@ -25,12 +29,12 @@ dica: Resumo público e fixo, mostrado no painel Employees do HUD.
 ## Personalidade
 ## Jeito de falar
 ## Interesses
-Temas que mexem com a pessoa; o gerador usa um deles no motivo e nas pistas.
+Temas que mexem com a pessoa; o gerador usa um deles na palavra secreta e nas pistas.
 
 ## Cenários prontos
 ### Fácil: título
-- Situação: ...
-- Motivo: Fulano aceita ir tomar café se o chefe ...
+- Palavra: ...
+- Categoria: objeto | política
 - Pistas: ...
 
 ### Médio: título
@@ -47,34 +51,41 @@ São um por dificuldade e têm duas funções:
 
 Escreva-os assim:
 
-- O **motivo** é a regra do jogo: uma condição concreta que o chefe cumpre só conversando.
-  No _difícil_, exija **duas** coisas juntas ("as DUAS coisas: ... E ...").
-- Diga também o que **não** vale (por exemplo, "bug em outra coisa não basta"). Modelos
-  pequenos confundem situações parecidas.
-- As **pistas** descrevem o que o personagem comenta sem entregar o motivo: mais claras no
-  fácil, vagas no difícil.
+- A **palavra** é a resposta do jogo: 1 a 3 palavras, do dia a dia, ligada aos Interesses. Pode ser
+  um **objeto** (uma coisa concreta) ou uma **opinião política** curta de esquerda/liberal ou
+  direita/conservador.
+- A **categoria** é `objeto` ou `política` (qualquer rótulo com "polit" vira `política`; o resto, `objeto`).
+- As **pistas** são o que o personagem comenta _sem nunca dizer a palavra_: mais claras no fácil,
+  vagas no difícil. Elas devem levar o chefe até a palavra.
 - Mantenha tudo curto: a persona vai inteira em toda mensagem, e menos texto deixa a
   resposta mais rápida.
+
+## Como o acerto é decidido
+
+Não é o modelo que decide: o código (`game/conversation.js` → `mentionsWord`) compara a fala do
+chefe (sem acentos nem pontuação) com a palavra secreta. Mencionar a palavra no meio de qualquer
+frase conta como acerto. Para palavras de um só termo, o termo precisa aparecer inteiro; para
+expressões (ex.: "livre mercado"), basta a expressão aparecer na fala.
 
 ## Dificuldade
 
 Definida em `config/game.js` → `difficulty`. Cada nível tem:
 
-- `motiveGuide` / `cluesGuide`: instruções para o gerador (quantas condições, quão claras as pistas);
-- `rule`: como o personagem negocia no chat;
-- `minMessages`: quantas falas do chefe são necessárias antes de aceitar (1 / 2 / 3). Antes disso o
-  personagem hesita, mesmo que o chefe acerte o motivo.
+- `cluesGuide`: instrução para o gerador (quão claras as pistas);
+- `rule`: como o personagem dá as pistas no chat (claro no fácil, enigmático no difícil);
+- `minMessages`: a partir de qual fala do chefe o personagem solta as pistas mais fortes (1 / 2 / 3).
+  Antes disso ele dá pistas mais obscuras — mas se o chefe mencionar a palavra, vence do mesmo jeito.
 
-## Ver o cenário gerado
+## Ver a palavra secreta
 
 No HUD, o botão **Personas** (ícone de pergaminho, canto superior direito) mostra a dificuldade, a
-situação, o motivo e as pistas de cada personagem. Como isso revela as respostas do jogo, o painel
-avisa sobre o spoiler e só mostra o conteúdo depois que o jogador clica em "Ver as respostas".
+palavra secreta, a categoria e as pistas de cada personagem. Como isso revela as respostas do jogo,
+o painel avisa sobre o spoiler e só mostra o conteúdo depois que o jogador clica em "Ver as respostas".
 
 ## Depuração
 
 Abra o jogo com `?debug` na URL (ex.: `http://localhost:3000/?debug`) para ver o cenário sorteado de
-cada personagem (dificuldade, situação, motivo e pistas) na tela de loading, no console e no painel
-Employees.
+cada personagem (dificuldade, palavra secreta, categoria e pistas) na tela de loading, no console e no
+painel Employees.
 
 O jogo recarrega sozinho (`npm start`) ao salvar um arquivo desta pasta.

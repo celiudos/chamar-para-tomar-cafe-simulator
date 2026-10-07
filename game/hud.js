@@ -16,7 +16,7 @@ const BGM_SRC = game.audio.bgm;
 const DEFAULT_BGM_VOLUME = game.audio.defaultVolume;
 const LS_BGM_VOLUME = game.audio.storageKey;
 
-/** `?debug` na URL: mostra o cenario sorteado (dificuldade, situacao, motivo, pistas) na loading e no HUD. */
+/** `?debug` na URL: mostra o cenario sorteado (dificuldade, palavra secreta, categoria, pistas) na loading e no HUD. */
 export const debugMode = new URLSearchParams(location.search).has("debug");
 
 const ICON = "/public/ui/icons";
@@ -166,7 +166,7 @@ function workersPanel(seats, statusOf) {
       const sc = persona?.scenario;
       const debug =
         debugMode && sc
-          ? `<div class="hud-workers__debug">[${esc(game.difficulty[sc.difficulty]?.label ?? sc.difficulty)} · ${esc(sc.source)}]<br>Situação: ${esc(sc.situation)}<br>Motivo: ${esc(sc.reason)}<br>Pistas: ${esc(sc.clues)}</div>`
+          ? `<div class="hud-workers__debug">[${esc(game.difficulty[sc.difficulty]?.label ?? sc.difficulty)} · ${esc(sc.source)}]<br>Palavra secreta: ${esc(sc.word)}<br>Categoria: ${esc(sc.category)}<br>Pistas: ${esc(sc.clues)}</div>`
           : "";
       return `
         <div class="hud-workers__item">
@@ -184,16 +184,16 @@ function workersPanel(seats, statusOf) {
   });
 }
 
-/** Cenario gerado para cada personagem. Fica escondido ate o jogador confirmar, pois entrega as respostas. */
+/** Palavra secreta gerada para cada personagem. Fica escondida ate o jogador confirmar, pois entrega as respostas. */
 function personasPanel(revealed) {
   const warning = `<div class="hud-spoiler">
-      <strong>Atenção: spoiler!</strong> Esta área mostra a situação, o motivo e as pistas geradas para cada pessoa
-      nesta partida, ou seja, <strong>as respostas do jogo</strong>. Prefere descobrir conversando? Mantenha fechado.
+      <strong>Atenção: spoiler!</strong> Esta área mostra a palavra secreta e as pistas geradas para cada pessoa
+      nesta partida, ou seja, <strong>as respostas do jogo</strong>. Prefere adivinhar conversando? Mantenha fechado.
     </div>`;
   if (!revealed) {
     return flyout({
       title: "Personas",
-      subtitle: "Cenário gerado nesta partida",
+      subtitle: "Palavras secretas desta partida",
       body: `<div class="hud-panel__stack">${warning}
         <button type="button" class="pixel-button" id="personas-toggle">Ver as respostas</button></div>`,
     });
@@ -204,20 +204,19 @@ function personasPanel(revealed) {
       if (!sc) return "";
       const level = game.difficulty[sc.difficulty];
       const tag = sc.difficulty === "hard" ? "running" : sc.difficulty === "easy" ? "done" : "empty";
-      const min = level?.minMessages ?? 1;
       return `
         <div class="hud-workers__item">
           <div class="hud-workers__top"><span class="hud-status hud-status--${tag}">${esc(level?.label ?? sc.difficulty)}</span><span>${esc(c.name)} &middot; ${esc(c.role)}</span></div>
-          <div class="hud-persona__field"><b>Situação</b>${esc(sc.situation)}</div>
-          <div class="hud-persona__field"><b>Motivo</b>${esc(sc.reason)}</div>
+          <div class="hud-persona__field"><b>Palavra secreta</b>${esc(sc.word)}</div>
+          <div class="hud-persona__field"><b>Categoria</b>${esc(sc.category)}</div>
           <div class="hud-persona__field"><b>Pistas</b>${esc(sc.clues || "—")}</div>
-          <div class="hud-workers__hint">${sc.source === "ollama" ? "Gerado pelo Ollama" : "Cenário reserva (Ollama indisponível)"} &middot; aceita a partir da ${min}ª fala do chefe</div>
+          <div class="hud-workers__hint">${sc.source === "ollama" ? "Gerado pelo Ollama" : "Cenário reserva (Ollama indisponível)"} &middot; mencione a palavra para vencer</div>
         </div>`;
     })
     .join("");
   return flyout({
     title: "Personas",
-    subtitle: "Cenário gerado nesta partida",
+    subtitle: "Palavras secretas desta partida",
     body: `<div class="hud-panel__stack">${warning}
       <button type="button" class="pixel-button" id="personas-toggle">Ocultar as respostas</button>
       <div class="hud-workers hud-workers--tall">${items}</div></div>`,
@@ -273,13 +272,13 @@ function tasksPanel(statusOf) {
             <span class="hud-status hud-status--${done ? "done" : "empty"}">${done ? "done" : "todo"}</span>
             <span>${asked} msg</span>
           </div>
-          <div class="hud-workers__task">Levar ${esc(c.name)} para tomar café</div>
+          <div class="hud-workers__task">Adivinhar a palavra de ${esc(c.name)}</div>
         </div>`;
     })
     .join("");
   return flyout({
     title: "Tasks",
-    subtitle: `Leve alguém para o café · ${atCoffee}/${characters.length}`,
+    subtitle: `Acerte as palavras · ${atCoffee}/${characters.length}`,
     body: `<div class="hud-workers">${items}</div>`,
   });
 }
@@ -311,18 +310,18 @@ function chatBubble(kind, role, text, extra = "") {
 
 function chatMessagesHtml(character, streamingText, notice) {
   if (!character) {
-    return '<div class="hud-chat__system">Chegue perto de alguém, aperte E e escolha "Conversar".<br>Objetivo: convencer a pessoa a ir tomar café!</div>';
+    return '<div class="hud-chat__system">Chegue perto de alguém, aperte E e escolha "Conversar".<br>Objetivo: descobrir a palavra secreta pelas pistas e mencioná-la na conversa!</div>';
   }
   const conv = conversationFor(character);
   const name = character.name.toUpperCase();
   const items = [];
   if (!conv.entries.length && streamingText === undefined) {
-    items.push(`<div class="hud-chat__system">${esc(character.name)} está trabalhando. Escolha uma opção abaixo ou escreva a sua mensagem.</div>`);
+    items.push(`<div class="hud-chat__system">${esc(character.name)} tem uma palavra secreta. Peça pistas e tente adivinhar escrevendo a palavra na sua mensagem.</div>`);
   }
   items.push(...conv.entries.map((e) =>
     e.role === "user"
       ? chatBubble("user", "VOCE", esc(e.text))
-      : chatBubble("agent", name, esc(e.text), e.accepted ? '<span class="hud-chat__tag">aceitou</span>' : ""),
+      : chatBubble("agent", name, esc(e.text), e.accepted ? '<span class="hud-chat__tag">acertou!</span>' : ""),
   ));
   if (streamingText !== undefined) {
     const body = streamingText
@@ -330,7 +329,7 @@ function chatMessagesHtml(character, streamingText, notice) {
       : '<span class="hud-chat__typing"><i></i><i></i><i></i></span>';
     items.push(chatBubble("agent", name, body));
   }
-  if (conv.accepted) items.push(`<div class="hud-chat__system hud-chat__system--win">${esc(character.name)} aceitou o café!</div>`);
+  if (conv.accepted) items.push(`<div class="hud-chat__system hud-chat__system--win">Você acertou a palavra de ${esc(character.name)}!</div>`);
   if (notice) items.push(`<div class="hud-chat__system hud-chat__system--error">${esc(notice)}</div>`);
   return items.join("");
 }
@@ -341,8 +340,8 @@ function victoryHtml(character, winners) {
   return `
     <div class="hud-victory__card" role="dialog" aria-modal="true" aria-labelledby="victory-title">
       <div class="hud-victory__avatar">${portrait(spritePath(character), 1.6)}</div>
-      <div class="hud-victory__title" id="victory-title">Voce ganhou!</div>
-      <p class="hud-victory__text">${esc(character.name)} aceitou o convite e foi tomar café.</p>
+      <div class="hud-victory__title" id="victory-title">Voce acertou!</div>
+      <p class="hud-victory__text">Você descobriu a palavra secreta de ${esc(character.name)}, que foi tomar café com você.</p>
       <p class="hud-victory__stats">${asked} ${asked === 1 ? "mensagem" : "mensagens"} &middot; ${formatDuration(Date.now() - winners.startedAt)} &middot; ${winners.count}/${characters.length} no café</p>
       <div class="hud-victory__actions">
         <button type="button" class="pixel-button" data-victory="continue">Continuar</button>
@@ -573,7 +572,7 @@ export function initHud() {
     input.placeholder = !character
       ? "Ninguém selecionado"
       : conv.accepted
-        ? `${character.name} já foi tomar café`
+        ? `Você já acertou a palavra de ${character.name}`
         : conv.pending
           ? `${character.name} está pensando...`
           : `Fale com ${character.name}... (Enter envia)`;

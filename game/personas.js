@@ -1,9 +1,9 @@
 // Personas dos personagens: um arquivo Markdown por personagem em /personas.
 //
 // A parte FIXA da persona (personalidade e jeito de falar; profissao e genero vem de
-// config/characters.js) fica no .md. A parte DINAMICA (situacao agora, motivo para aceitar o
-// cafe e pistas) e criada a cada carregamento do jogo em game/scenario.js; os "Cenarios prontos"
-// do .md (um por dificuldade) servem de exemplo para o gerador e de reserva sem o Ollama.
+// config/characters.js) fica no .md. A parte DINAMICA (palavra secreta, categoria e pistas)
+// e criada a cada carregamento do jogo em game/scenario.js; os "Cenarios prontos" do .md
+// (um por dificuldade) servem de exemplo para o gerador e de reserva sem o Ollama.
 //
 // Formato (ver personas/README.md):
 //   ---
@@ -14,8 +14,8 @@
 //   ## Jeito de falar
 //   ## Cenários prontos
 //   ### Fácil: titulo
-//   - Situação: ...
-//   - Motivo: ...
+//   - Palavra: ...
+//   - Categoria: objeto | política
 //   - Pistas: ...
 import { game } from "../config/index.js";
 
@@ -29,7 +29,12 @@ function levelFromLabel(label) {
   return game.difficulty.levels.find((id) => norm(game.difficulty[id].label) === norm(label));
 }
 
-/** Le os blocos "### Nivel: titulo" com os itens "- Situação/Motivo/Pistas: texto". */
+/** "política"/"objeto" normalizados; qualquer coisa com "polit" vira "política", o resto "objeto". */
+function normCategory(raw) {
+  return norm(raw).includes("polit") ? "política" : "objeto";
+}
+
+/** Le os blocos "### Nivel: titulo" com os itens "- Palavra/Categoria/Pistas: texto". */
 function parseScenarios(text) {
   const scenarios = {};
   for (const block of text.split(/^### /m).slice(1)) {
@@ -41,8 +46,13 @@ function parseScenarios(text) {
       const re = new RegExp(`^-\\s*${name}\\s*:\\s*(.+)$`, "im");
       return re.exec(lines.join("\n"))?.[1].trim() ?? "";
     };
-    const scenario = { title: title.join(":").trim(), situation: field("Situa[çc][ãa]o"), reason: field("Motivo"), clues: field("Pistas") };
-    if (scenario.situation && scenario.reason) scenarios[level] = scenario;
+    const scenario = {
+      title: title.join(":").trim(),
+      word: field("Palavra"),
+      category: normCategory(field("Categoria")),
+      clues: field("Pistas"),
+    };
+    if (scenario.word && scenario.clues) scenarios[level] = scenario;
   }
   return scenarios;
 }
@@ -67,22 +77,22 @@ export function parsePersona(markdown) {
     hint: meta.dica ?? "",
     body: fixed.trim(),
     scenarios: cut >= 0 ? parseScenarios(body.slice(cut)) : {},
-    /** Cenario da partida atual (situacao, motivo, pistas, dificuldade): preenchido em game/scenario.js. */
+    /** Cenario da partida atual (palavra, categoria, pistas, dificuldade): preenchido em game/scenario.js. */
     scenario: null,
   };
 }
 
 /** Persona minima, usada quando o .md nao carrega. */
 function fallbackPersona(c) {
-  const p = parsePersona(`# ${c.name}\n\n## Personalidade\n${c.name} é ${c.role}. Só aceita café se for muito bem convencido(a).`);
+  const p = parsePersona(`# ${c.name}\n\n## Personalidade\n${c.name} é ${c.role} e adora um jogo de adivinhação.`);
   p.scenarios = Object.fromEntries(
     game.difficulty.levels.map((level) => [
       level,
       {
         title: "",
-        situation: "Está concentrado(a) no trabalho.",
-        reason: `${c.name} só aceita ir tomar café se o chefe der um bom motivo ligado ao trabalho dele(a).`,
-        clues: "",
+        word: "cafézinho",
+        category: "objeto",
+        clues: "Comenta que está morrendo de vontade de uma pausa com aquela bebida quentinha.",
       },
     ]),
   );

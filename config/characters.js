@@ -4,7 +4,7 @@
 // sprite:  numero da sheet em public/characters/Premade_Character_48x48_<sprite>.png
 // seat:    id da cadeira no mapa (objetos da camada "spawns" de public/maps/baias.json)
 // role/gender: parte FIXA da persona, junto com o arquivo Markdown em /personas (<persona>.md),
-//          que traz personalidade e jeito de falar. Situacao agora, motivo para aceitar o cafe,
+//          que traz personalidade e jeito de falar. Palavra secreta, categoria,
 //          pistas e dificuldade sao criados a cada partida na tela de loading (game/scenario.js).
 // persona: nome do arquivo em /personas (sem .md).
 

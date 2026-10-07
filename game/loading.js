@@ -1,5 +1,5 @@
 // Tela de loading: antes de o jogo comecar, complementa a persona de cada personagem
-// (dificuldade, situacao agora, motivo para aceitar o cafe e pistas) com o Ollama.
+// (dificuldade, palavra secreta, categoria e pistas) com o Ollama.
 // Sem Ollama (ou sem o modelo), usa os cenarios prontos de personas/*.md.
 import { game, characters } from "../config/index.js";
 import { checkOllama } from "./ollama.js";
@@ -30,7 +30,7 @@ function debugHtml(scenarios) {
   return scenarios
     .map(
       (s) => `<div class="loading__debug-item"><b>${esc(s.name)}</b> · ${esc(game.difficulty[s.difficulty].label)} · ${esc(s.source)}<br>
-        <i>Situação:</i> ${esc(s.situation)}<br><i>Motivo:</i> ${esc(s.reason)}<br><i>Pistas:</i> ${esc(s.clues)}</div>`,
+        <i>Palavra:</i> ${esc(s.word)}<br><i>Categoria:</i> ${esc(s.category)}<br><i>Pistas:</i> ${esc(s.clues)}</div>`,
     )
     .join("");
 }
@@ -68,7 +68,7 @@ export async function runLoading() {
   const { online, hasModel } = await checkOllama();
   const useModel = online && hasModel;
   subtitle.textContent = useModel
-    ? "Inventando a situação, o motivo e as pistas de cada pessoa..."
+    ? "Inventando a palavra secreta, a categoria e as pistas de cada pessoa..."
     : "Ollama indisponível: usando os cenários reservas.";
 
   const scenarios = await buildScenarios(characters, {
@@ -83,9 +83,9 @@ export async function runLoading() {
   const fromModel = scenarios.filter((s) => s.source === "ollama").length;
   subtitle.textContent = "Tudo pronto!";
   tip.textContent =
-    "Cada pessoa tem uma situação, um motivo e uma dificuldade diferentes. Converse, descubra o que cada um quer e leve alguém para a área de café.";
+    "Cada pessoa esconde uma palavra secreta (um objeto ou uma opinião política). Peça pistas, descubra a palavra e mencione-a na conversa para levar a pessoa ao café.";
   if (debugMode) {
-    console.table(scenarios.map((s) => ({ nome: s.name, nivel: s.difficulty, fonte: s.source, situacao: s.situation, motivo: s.reason, pistas: s.clues })));
+    console.table(scenarios.map((s) => ({ nome: s.name, nivel: s.difficulty, fonte: s.source, palavra: s.word, categoria: s.category, pistas: s.clues })));
     $("loading-debug").innerHTML = debugHtml(scenarios);
     $("loading-debug").hidden = false;
   }

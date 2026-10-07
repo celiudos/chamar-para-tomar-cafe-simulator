@@ -44,7 +44,7 @@ async function waitForFonts() {
 await Promise.all([waitForFonts(), loadPersonas(characters)]);
 
 // O Phaser ja carrega o cenario por tras da tela de loading, que complementa as personas
-// (situacao, motivo, pistas e dificuldade) e so libera o jogo quando o jogador clica em "Comecar".
+// (palavra secreta, categoria, pistas e dificuldade) e so libera o jogo quando o jogador clica em "Comecar".
 const phaserGame = new Phaser.Game(gameConfig);
 // Referencia para depuracao no console do navegador (ex.: __GAME__.scene.scenes[0]).
 globalThis.__GAME__ = phaserGame;

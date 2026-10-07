@@ -1,9 +1,11 @@
 // Cenario da partida: complementa a persona FIXA de cada personagem (personas/*.md) com a parte
 // DINAMICA, criada a cada carregamento do jogo (tela de loading):
 //   - dificuldade (sorteada, repartida por igual entre a equipe)
-//   - situacao agora
-//   - motivo para aceitar o cafe
-//   - pistas que o personagem pode dar na conversa
+//   - palavra secreta que o personagem quer ouvir o chefe mencionar
+//   - categoria da palavra ("objeto" ou "política")
+//   - pistas contextuais que o personagem deixa escapar na conversa
+// E um jogo de adivinhacao (estilo "Imagem e Acao", mas sem mimica): o personagem fala em pistas
+// e aceita assim que o chefe menciona a palavra secreta no meio da conversa.
 // O Ollama inventa o complemento; se ele estiver fora do ar ou responder algo invalido,
 // usa o "cenario pronto" do proprio .md para a mesma dificuldade.
 import { game } from "../config/index.js";
@@ -12,14 +14,17 @@ import { personas } from "./personas.js";
 
 const { difficulty, loading } = game;
 
+/** Categorias validas da palavra secreta. */
+export const CATEGORIES = ["objeto", "política"];
+
 export const SCENARIO_FORMAT = {
   type: "object",
   properties: {
-    situacao: { type: "string" },
-    motivo: { type: "string" },
+    palavra: { type: "string" },
+    categoria: { type: "string", enum: CATEGORIES },
     pistas: { type: "string" },
   },
-  required: ["situacao", "motivo", "pistas"],
+  required: ["palavra", "categoria", "pistas"],
 };
 
 function shuffle(list) {
@@ -39,28 +44,35 @@ export function assignDifficulties(count) {
 
 const clean = (s) => String(s ?? "").replace(/\s+/g, " ").replace(/\*{1,2}([^*]+)\*{1,2}/g, "$1").trim();
 
+/** Normaliza categoria: aceita variacoes ("politica", "opiniao politica"...) e cai em "objeto". */
+function normCategory(raw) {
+  const c = clean(raw).normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
+  if (c.includes("polit")) return "política";
+  return "objeto";
+}
+
 /** Prompt do gerador. O exemplo (cenario pronto do .md) mostra o formato e o nivel de dificuldade. */
 export function buildGeneratorMessages(character, persona, level) {
   const d = difficulty[level];
   const example = persona.scenarios[level];
   const gender = character.gender === "female" ? "feminino" : "masculino";
   const system = [
-    "Você cria cenários para um jogo de escritório bem-humorado, em português do Brasil.",
-    "No jogo, o chefe tenta convencer um funcionário a ir tomar café.",
-    "Você inventa a situação atual do funcionário, o motivo que o faria aceitar o café e as pistas que ele deixa escapar na conversa.",
-    'Responda só com JSON: {"situacao": "...", "motivo": "...", "pistas": "..."}',
+    "Você cria rodadas para um jogo de adivinhação de escritório bem-humorado, em português do Brasil.",
+    'O jogo é parecido com "Imagem e Ação", mas sem mímica: o funcionário quer que o chefe mencione uma PALAVRA SECRETA e vai soltando pistas no diálogo até ele acertar.',
+    'A palavra secreta é um "objeto" (uma coisa concreta e simples) OU uma "política" (uma opinião política de esquerda/liberal ou de direita/conservador, dita em 1 a 3 palavras).',
+    'Responda só com JSON: {"palavra": "...", "categoria": "objeto" ou "política", "pistas": "..."}',
   ].join("\n");
   const user = [
     `Funcionário: ${character.name} (${character.role}, gênero ${gender}).`,
     persona.body,
     "",
     `Dificuldade: ${d.label}.`,
-    '- "situacao": o que a pessoa está fazendo agora e por que está presa à mesa (1 frase curta, em 3ª pessoa, ligada aos Interesses).',
-    `- "motivo": a condição para aceitar o café; algo simples que o chefe cumpre só conversando, girando em torno de UM dos Interesses. Comece com "${character.name} só aceita ir tomar café se". Máximo 2 frases, linguagem do dia a dia. Peça ${d.motiveGuide} Convite comum, insistência, ordem ou suborno nunca bastam.`,
-    `- "pistas": 1 frase curta que a pessoa diz na conversa sem entregar o motivo: ${d.cluesGuide}.`,
-    "- Nada de termos técnicos rebuscados nem exigências absurdas. Invente algo diferente do exemplo.",
+    '- "palavra": a palavra secreta que o chefe precisa dizer para acertar. 1 a 3 palavras, do dia a dia, ligada aos Interesses do funcionário. Pode ser um objeto concreto OU uma opinião política curta de esquerda/liberal ou direita/conservador.',
+    '- "categoria": "objeto" se a palavra for uma coisa; "política" se for uma opinião política.',
+    `- "pistas": 1 frase curta que o funcionário diz na conversa, levando o chefe à palavra sem NUNCA dizê-la: ${d.cluesGuide}.`,
+    "- Nada de termos técnicos rebuscados. A palavra tem que ser possível de adivinhar pelas pistas. Invente algo diferente do exemplo.",
     example
-      ? `\nExemplo de estilo (invente algo DIFERENTE):\n${JSON.stringify({ situacao: example.situation, motivo: example.reason, pistas: example.clues })}`
+      ? `\nExemplo de estilo (invente algo DIFERENTE):\n${JSON.stringify({ palavra: example.word, categoria: example.category, pistas: example.clues })}`
       : "",
   ].join("\n");
   return [
@@ -77,12 +89,13 @@ export function parseGenerated(raw) {
   } catch {
     return null;
   }
-  const situation = clean(data.situacao);
-  const reason = clean(data.motivo);
+  const word = clean(data.palavra);
+  const category = normCategory(data.categoria);
   const clues = clean(data.pistas);
-  if (situation.length < 15 || reason.length < 30 || clues.length < 8) return null;
-  if (situation.length > 400 || reason.length > 500 || clues.length > 300) return null;
-  return { situation, reason, clues };
+  // Palavra de 1 a ~4 palavras; pistas com um minimo de conteudo.
+  if (word.length < 2 || word.length > 40 || word.split(/\s+/).length > 4) return null;
+  if (clues.length < 8 || clues.length > 300) return null;
+  return { word, category, clues };
 }
 
 /** Pede ao Ollama o complemento de UM personagem (com tentativas e tempo limite). */
@@ -128,7 +141,7 @@ export async function buildScenarios(characters, { useModel = true, onProgress }
       }
       if (!scenario) {
         const ready = persona.scenarios[level] ?? Object.values(persona.scenarios)[0];
-        scenario = { situation: ready.situation, reason: ready.reason, clues: ready.clues, source: "pronto" };
+        scenario = { word: ready.word, category: ready.category, clues: ready.clues, source: "pronto" };
       }
       persona.scenario = { ...scenario, difficulty: level };
       onProgress?.(character.id, scenario.source === "ollama" ? "done" : "fallback");
