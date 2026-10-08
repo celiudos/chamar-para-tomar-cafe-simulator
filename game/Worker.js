@@ -41,6 +41,8 @@ export class Worker {
     this.timer = null;
     /** true depois que levantou da cadeira (andando ou ja no cafe). */
     this.leftSeat = false;
+    /** Emotes aleatorios do ciclo de atividades (o Walker do modo equipe usa outra lista). */
+    this.activities = SEAT_ACTIVITIES;
     const label = this.label;
 
     this.ensureAnims(scene, spriteKey);
@@ -134,7 +136,7 @@ export class Worker {
 
   /** Escolhe um emote de atividade, mostra por um tempo e agenda o proximo. */
   nextActivity() {
-    const def = Phaser.Utils.Array.GetRandom(SEAT_ACTIVITIES);
+    const def = Phaser.Utils.Array.GetRandom(this.activities);
     const duration = Phaser.Math.Between(def.minDuration, def.maxDuration);
     this.showEmote(def.emote);
     this.timer = this.scene.time.delayedCall(duration, () => {
@@ -156,10 +158,10 @@ export class Worker {
     this.timer = this.scene.time.delayedCall(delay, () => this.nextActivity());
   }
 
-  /** Mostra um balao de fala sobre o personagem (substitui o emote atual). */
-  showBubble(message, ttl = 5000) {
+  /** Mostra um balao de fala sobre o personagem (substitui o emote atual). `options`: ver ChatBubble.show. */
+  showBubble(message, ttl = 5000, options) {
     this.hideEmote();
-    this.bubble.show(message, this.sprite.x, this.sprite.y - FRAME_HEIGHT * BUBBLE_Y_OFFSET, ttl);
+    this.bubble.show(message, this.sprite.x, this.sprite.y - FRAME_HEIGHT * BUBBLE_Y_OFFSET, ttl, options);
   }
 
   /**

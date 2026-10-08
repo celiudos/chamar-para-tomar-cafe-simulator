@@ -47,16 +47,23 @@
     </div>
   </div>
 
-  <!-- Tela de loading: complementa as personas (palavra secreta, categoria, pistas) antes de comecar -->
-  <div class="loading" id="loading" role="status" aria-live="polite">
-    <div class="loading__card">
+  <!-- Tela inicial: escolha do modo e, depois, o loading do modo classico ou o formulario do modo equipe -->
+  <div class="loading" id="loading">
+    <div class="loading__card" id="loading-card">
       <div class="loading__title">chamar-para-tomar-cafe-simulator</div>
-      <div class="loading__subtitle" id="loading-subtitle">Preparando o escritório...</div>
-      <ul class="loading__list" id="loading-list"></ul>
-      <div class="loading__bar" aria-hidden="true"><span id="loading-bar"></span></div>
-      <p class="loading__tip" id="loading-tip"></p>
-      <div class="loading__debug" id="loading-debug" hidden></div>
-      <button type="button" class="pixel-button pixel-button--primary" id="loading-start" hidden>Começar</button>
+      <div class="loading__subtitle" id="loading-subtitle" role="status" aria-live="polite">Preparando o escritório...</div>
+      <!-- Escolha do modo de jogo (game/modes.js) -->
+      <div class="loading__modes" id="loading-modes" hidden></div>
+      <!-- Modo "Equipe adivinha": palavra secreta e dicas do jogador (game/teamSetup.js) -->
+      <div class="loading__team" id="loading-team" hidden></div>
+      <!-- Modo "Chefe adivinha": geracao das palavras secretas da equipe (game/loading.js) -->
+      <div class="loading__classic" id="loading-classic" hidden>
+        <ul class="loading__list" id="loading-list"></ul>
+        <div class="loading__bar" aria-hidden="true"><span id="loading-bar"></span></div>
+        <p class="loading__tip" id="loading-tip"></p>
+        <div class="loading__debug" id="loading-debug" hidden></div>
+        <button type="button" class="pixel-button pixel-button--primary" id="loading-start" hidden>Começar</button>
+      </div>
     </div>
   </div>
 

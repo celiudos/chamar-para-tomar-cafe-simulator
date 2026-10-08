@@ -64,6 +64,10 @@ export const EMOTE_ANIMS = [
   { key: "emote:wrench", frames: [74, 75], frameRate: 2, repeat: -1 },
   { key: "emote:device", frames: [58, 59], frameRate: 2, repeat: -1 },
   { key: "emote:dots", frames: [92, 93], frameRate: 2, repeat: -1 },
+  // Modo equipe: reacoes do chefe aos palpites (X vermelho = errado, sol = "ta quente").
+  { key: "emote:no", frames: [90, 91], frameRate: 4, repeat: 3 },
+  { key: "emote:hot", frames: [82, 83], frameRate: 3, repeat: 3 },
+  { key: "emote:sweat", frames: [96, 97], frameRate: 3, repeat: 3 },
 ];
 
 // ── Comportamento idle na cadeira ─────────────────────────

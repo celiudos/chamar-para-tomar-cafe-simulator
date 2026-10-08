@@ -1,8 +1,12 @@
 import { game as gameCfg, characters } from "../config/index.js";
 import OfficeScene from "./OfficeScene.js";
+import TeamScene from "./TeamScene.js";
 import { initHud } from "./hud.js";
 import { loadPersonas } from "./personas.js";
 import { runLoading } from "./loading.js";
+import { chooseMode } from "./modes.js";
+import { runTeamSetup } from "./teamSetup.js";
+import { startTeamMode } from "./teamHud.js";
 
 // Identidade do jogo vinda de config/game.js
 document.title = gameCfg.name;
@@ -20,7 +24,6 @@ const gameConfig = {
   pixelArt: true,
   antialias: false,
   roundPixels: true,
-  scene: [OfficeScene],
   scale: {
     mode: Phaser.Scale.RESIZE,
     autoCenter: Phaser.Scale.NO_CENTER,
@@ -40,14 +43,28 @@ async function waitForFonts() {
   await Promise.race([Promise.all([load('8px "Press Start 2P"'), load('12px "ArkPixel"')]), timeout]);
 }
 
+/** Cria o Phaser com a cena do modo. Referencia para depuracao no console: __GAME__. */
+function startPhaser(scene) {
+  const phaserGame = new Phaser.Game({ ...gameConfig, scene: [scene] });
+  globalThis.__GAME__ = phaserGame;
+  return phaserGame;
+}
+
 // Fontes e personas fixas (/personas/*.md) carregam em paralelo.
 await Promise.all([waitForFonts(), loadPersonas(characters)]);
 
-// O Phaser ja carrega o cenario por tras da tela de loading, que complementa as personas
-// (palavra secreta, categoria, pistas e dificuldade) e so libera o jogo quando o jogador clica em "Comecar".
-const phaserGame = new Phaser.Game(gameConfig);
-// Referencia para depuracao no console do navegador (ex.: __GAME__.scene.scenes[0]).
-globalThis.__GAME__ = phaserGame;
+// Tela inicial: escolha do modo (ou ?modo=classico / ?modo=equipe na URL).
+const mode = await chooseMode();
+document.body.dataset.mode = mode;
 
-await runLoading();
-initHud();
+if (mode === "team") {
+  // "Equipe adivinha": o escritorio carrega por tras enquanto o jogador escolhe a palavra e as dicas.
+  startPhaser(TeamScene);
+  startTeamMode(await runTeamSetup());
+} else {
+  // "Chefe adivinha": o Phaser ja carrega o cenario por tras da tela de loading, que complementa as
+  // personas (palavra secreta, categoria, pistas e dificuldade) e so libera o jogo no "Comecar".
+  startPhaser(OfficeScene);
+  await runLoading();
+  initHud();
+}

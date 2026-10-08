@@ -11,6 +11,7 @@ import { gameEvents } from "./events.js";
 import { conversationFor } from "./conversation.js";
 import { baseUrl, checkOllama, viaLanProxy, warmUp } from "./ollama.js";
 import { personas } from "./personas.js";
+import { restartIn } from "./modes.js";
 
 const BGM_SRC = game.audio.bgm;
 const DEFAULT_BGM_VOLUME = game.audio.defaultVolume;
@@ -19,8 +20,8 @@ const LS_BGM_VOLUME = game.audio.storageKey;
 /** `?debug` na URL: mostra o cenario sorteado (dificuldade, palavra secreta, categoria, pistas) na loading e no HUD. */
 export const debugMode = new URLSearchParams(location.search).has("debug");
 
-const ICON = "/public/ui/icons";
-const MODEL = game.ollama.model;
+export const ICON = "/public/ui/icons";
+export const MODEL = game.ollama.model;
 const MAX_QUESTION = game.chat.maxQuestionChars;
 /** Depois do "sim", o chat fecha sozinho para o jogador ver o personagem indo ao cafe. */
 const CLOSE_CHAT_AFTER_ACCEPT_MS = 1800;
@@ -35,7 +36,7 @@ const TOOLS = [
 ];
 
 /** Status da conexao com o Ollama: cor do ponto e texto da pill. */
-const OLLAMA_STATUS = {
+export const OLLAMA_STATUS = {
   checking: { dot: "gray", label: "Ollama..." },
   loading: { dot: "yellow", label: "Loading model" },
   online: { dot: "green", label: "Online" },
@@ -53,9 +54,9 @@ const CHARACTER_STATUS = {
 
 const SVG_ATTRS =
   'width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"';
-const ICON_SPARKLES = `<svg ${SVG_ATTRS}><path d="M9.937 15.5A2 2 0 0 0 8.5 14.063l-6.135-1.582a.5.5 0 0 1 0-.962L8.5 9.936A2 2 0 0 0 9.937 8.5l1.582-6.135a.5.5 0 0 1 .963 0L14.063 8.5A2 2 0 0 0 15.5 9.937l6.135 1.581a.5.5 0 0 1 0 .964L15.5 14.063a2 2 0 0 0-1.437 1.437l-1.582 6.135a.5.5 0 0 1-.963 0z"/><path d="M20 3v4"/><path d="M22 5h-4"/><path d="M4 17v2"/><path d="M5 18H3"/></svg>`;
-const ICON_SCROLL = `<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 12h-5"/><path d="M15 8h-5"/><path d="M19 17V5a2 2 0 0 0-2-2H4"/><path d="M8 21h12a2 2 0 0 0 2-2v-1a1 1 0 0 0-1-1H11a1 1 0 0 0-1 1v1a2 2 0 1 1-4 0V5a2 2 0 1 0-4 0v2a1 1 0 0 0 1 1h3"/></svg>`;
-const ICON_COFFEE = `<svg ${SVG_ATTRS}><path d="M10 2v2"/><path d="M14 2v2"/><path d="M16 8a1 1 0 0 1 1 1v8a4 4 0 0 1-4 4H7a4 4 0 0 1-4-4V9a1 1 0 0 1 1-1h14a4 4 0 1 1 0 8h-1"/><path d="M6 2v2"/></svg>`;
+export const ICON_SPARKLES = `<svg ${SVG_ATTRS}><path d="M9.937 15.5A2 2 0 0 0 8.5 14.063l-6.135-1.582a.5.5 0 0 1 0-.962L8.5 9.936A2 2 0 0 0 9.937 8.5l1.582-6.135a.5.5 0 0 1 .963 0L14.063 8.5A2 2 0 0 0 15.5 9.937l6.135 1.581a.5.5 0 0 1 0 .964L15.5 14.063a2 2 0 0 0-1.437 1.437l-1.582 6.135a.5.5 0 0 1-.963 0z"/><path d="M20 3v4"/><path d="M22 5h-4"/><path d="M4 17v2"/><path d="M5 18H3"/></svg>`;
+export const ICON_SCROLL = `<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 12h-5"/><path d="M15 8h-5"/><path d="M19 17V5a2 2 0 0 0-2-2H4"/><path d="M8 21h12a2 2 0 0 0 2-2v-1a1 1 0 0 0-1-1H11a1 1 0 0 0-1 1v1a2 2 0 1 1-4 0V5a2 2 0 1 0-4 0v2a1 1 0 0 0 1 1h3"/></svg>`;
+export const ICON_COFFEE = `<svg ${SVG_ATTRS}><path d="M10 2v2"/><path d="M14 2v2"/><path d="M16 8a1 1 0 0 1 1 1v8a4 4 0 0 1-4 4H7a4 4 0 0 1-4-4V9a1 1 0 0 1 1-1h14a4 4 0 1 1 0 8h-1"/><path d="M6 2v2"/></svg>`;
 
 export const esc = (s) =>
   String(s).replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c]);
@@ -73,13 +74,13 @@ export function portrait(spritePath, scale = 1.1) {
   return `<div class="portrait" role="img" style="width:${w}px;height:${h}px;margin-top:-${h * 0.42}px;background-image:url('${esc(spritePath)}');background-size:${sheetW}px auto;background-position:-${fx * scale}px -${fy * scale}px"></div>`;
 }
 
-function formatDuration(ms) {
+export function formatDuration(ms) {
   const s = Math.round(ms / 1000);
   return `${Math.floor(s / 60)}m ${String(s % 60).padStart(2, "0")}s`;
 }
 
 /** Mensagem amigavel para erros da chamada ao Ollama. */
-function errorMessage(err) {
+export function errorMessage(err) {
   if (err instanceof TypeError) {
     if (viaLanProxy) {
       return `Sem conexão com o Ollama em ${baseUrl}. Confira se o "npm start" está rodando na máquina do jogo e tente de novo.`;
@@ -91,7 +92,7 @@ function errorMessage(err) {
 }
 
 // ── BGM ───────────────────────────────────────────────────
-function createBgm() {
+export function createBgm() {
   const clamp = (v) => (Number.isFinite(v) ? Math.min(1, Math.max(0, v)) : DEFAULT_BGM_VOLUME);
   const stored = localStorage.getItem(LS_BGM_VOLUME);
   let volume = clamp(stored === null ? DEFAULT_BGM_VOLUME : Number(stored));
@@ -131,7 +132,7 @@ function createBgm() {
 }
 
 // ── Flyouts ───────────────────────────────────────────────
-function flyout({ title, subtitle, headerAction = "", body, bodyClass = "" }) {
+export function flyout({ title, subtitle, headerAction = "", body, bodyClass = "" }) {
   return `
     <div class="hud-flyout">
       <div class="hud-flyout__header">
@@ -223,7 +224,7 @@ function personasPanel(revealed) {
   });
 }
 
-function musicPanel(bgm) {
+export function musicPanel(bgm) {
   const pct = Math.round(bgm.volume * 100);
   return `
     <div class="hud-music-bar">
@@ -233,7 +234,7 @@ function musicPanel(bgm) {
     </div>`;
 }
 
-function connectionPanel(status, error) {
+export function connectionPanel(status, error) {
   const s = OLLAMA_STATUS[status];
   const help =
     status === "offline"
@@ -658,7 +659,7 @@ export function initHud() {
 
   victory.addEventListener("click", (e) => {
     const action = e.target.closest("[data-victory]")?.dataset.victory;
-    if (action === "restart") window.location.reload();
+    if (action === "restart") restartIn("classic");
     else if (action === "continue") victory.hidden = true;
   });
   // Teclas nos botoes da vitoria nao movem o chefe por tras.

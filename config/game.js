@@ -208,6 +208,94 @@ export const game = {
     ],
   },
 
+  // ── Modos de jogo ───────────────────────────────────────
+  // Escolhidos na tela inicial. Na URL, `?modo=classico` ou `?modo=equipe` pula a escolha.
+  modes: [
+    {
+      id: "classic",
+      label: "Chefe adivinha",
+      url: "classico",
+      description:
+        "Cada funcionário, sentado na baia, pensa numa palavra secreta. Converse no chat, siga as pistas e diga a palavra para levá-lo ao café.",
+    },
+    {
+      id: "team",
+      label: "Equipe adivinha",
+      url: "equipe",
+      description:
+        "Você escolhe a palavra e as dicas. A equipe fica em pé, andando pelo escritório e conversando entre si até adivinhar.",
+    },
+  ],
+
+  // ── Modo "Equipe adivinha" ──────────────────────────────
+  // O jogador (chefe) define a palavra secreta, a categoria e as dicas. Os funcionarios andam pelo
+  // escritorio, se encontram em duplas e conversam (baloes) tentando adivinhar. A decisao do acerto
+  // e do codigo (game/words.js): palavra exata, singular ou plural. Ver game/teamChat.js.
+  team: {
+    /** Limites do formulario da rodada. */
+    wordMaxChars: 40,
+    wordMaxWords: 3,
+    hintsMax: 3,
+    hintMaxChars: 120,
+    /** Quantas conversas (em dupla) a equipe tem para acertar; depois disso o chefe vence. */
+    maxConversations: 10,
+    /** Falas por conversa (alternando entre os dois): cada fala traz um palpite. */
+    linesPerConversation: 2,
+    /** A cada quantas conversas o chefe solta a proxima dica (a 1a sai no inicio). */
+    revealHintEvery: 2,
+    /** Velocidade (px/s) andando pelo escritorio. */
+    walkSpeed: 70,
+    /** Pausa (ms) parado entre uma caminhada e outra: [min, max]. */
+    wanderPauseMs: [1200, 4500],
+    /** Raio (px) maximo de cada caminhada a toa. */
+    wanderRadius: 320,
+    /** Distancia (px) entre os dois na conversa. */
+    talkGap: 72,
+    /** Pausa (ms) entre uma conversa e a proxima: [min, max]. */
+    conversationGapMs: [1200, 3000],
+    /** Pausa (ms) depois de cada fala, para dar tempo de ler o balao. */
+    lineReadMs: 2600,
+    /** Duracao minima (ms) do balao de fala; falas longas ficam mais tempo (ms por caractere). */
+    bubbleMs: 4500,
+    bubbleMsPerChar: 55,
+    /** Tamanho maximo de cada fala da equipe (caracteres). */
+    maxLineChars: 180,
+    /** Quantas falas anteriores da conversa atual vao para o modelo. */
+    historyLines: 6,
+    /** Temperatura das falas (mais alta = palpites mais variados). */
+    temperature: 0.8,
+    /** Tentativas por fala (resposta invalida ou palpite repetido) antes de seguir. */
+    attempts: 2,
+    /** Sem Ollama no meio da rodada: espera (ms) antes de tentar de novo. */
+    retryMs: 5000,
+    /** Reacoes do chefe a cada palpite (sorteadas). */
+    bossReplies: {
+      wrong: ["Não!", "Errado!", "Nada a ver!", "Frio...", "Nem perto!", "Errou!"],
+      close: ["Tá quente!", "Quase!", "Chegou perto!", "Quente, quente!"],
+      repeat: ["Já falaram isso!", "Esse já foi!", "De novo isso?"],
+      none: ["Chuta alguma coisa!", "E aí, qual o palpite?"],
+      right: ["ACERTOU! Café pra todo mundo!", "É isso! Café liberado!"],
+      lost: "Acabou! A palavra era",
+    },
+    /** Pausa (ms) do chefe reagindo ao palpite antes da proxima fala. */
+    bossReactMs: 1400,
+    /** Dicas extras que o chefe pode dar durante a rodada (alem das do formulario). */
+    extraHintsMax: 3,
+    /** Exemplos que aparecem no formulario (placeholder e botao "Sortear exemplo"). */
+    placeholders: {
+      word: "grampeador",
+      hints: ["Fica em cima da mesa", "Vive sumindo quando você precisa", "Faz \"clack\" e prende papel"],
+    },
+    examples: [
+      { word: "cadeira", category: "objeto", hints: ["Você passa o dia em cima dela", "Tem rodinhas", "Gira"] },
+      { word: "guarda-chuva", category: "objeto", hints: ["Fica esquecido no ônibus", "Abre e fecha", "Salva no dia cinza"] },
+      { word: "fone de ouvido", category: "objeto", hints: ["Você usa na cabeça", "Serve para não ouvir os colegas", "Tem fio ou bluetooth"] },
+      { word: "caneca", category: "objeto", hints: ["Todo mundo tem a sua na copa", "Tem alça", "Café quente vai nela"] },
+      { word: "privatização", category: "política", hints: ["O governo vende o que é dele", "Correios e estatais entram na conversa", "Liberal adora, sindicato odeia"] },
+      { word: "reforma agrária", category: "política", hints: ["Bandeira do MST", "Dividir a terra parada", "Tem a ver com o campo"] },
+    ],
+  },
+
   // ── Cafe (objetivo do jogo) ─────────────────────────────
   coffee: {
     /**

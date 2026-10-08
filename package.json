@@ -8,6 +8,7 @@
   "scripts": {
     "start": "node scripts/serve.mjs",
     "dev": "npm start",
+    "test": "node --test",
     "build:map": "node scripts/build-baias-map.mjs"
   },
   "dependencies": {

@@ -3,15 +3,15 @@
 // O chefe fica de pe e controla pelo teclado; os 6 personagens ficam sentados nas baias.
 // O chat (HUD) avisa por eventos quando um personagem esta pensando/respondendo; quem aceitar
 // o cafe levanta e anda ate a area de cafe (objetos "coffee", "coffee-2"... da camada "pois" do mapa).
-import { game, characters, player as playerCfg, spriteKey, spriteSheets } from "../config/index.js";
-import { EMOTE_FRAME_SIZE, EMOTE_SHEET_KEY, EMOTE_SHEET_PATH, PUBLIC_PATH } from "./constants.js";
+import { game, characters, player as playerCfg, spriteKey } from "../config/index.js";
+import { PUBLIC_PATH } from "./constants.js";
 import { Player } from "./Player.js";
 import { Worker } from "./Worker.js";
 import { CameraController } from "./CameraController.js";
 import { DoorManager } from "./DoorManager.js";
 import { InteractionManager } from "./interactions.js";
 import { gameEvents } from "./events.js";
-import { buildCollisionRects, buildSpriteFrames, findPoi, parseSpawns, renderTileObjectLayer } from "./MapHelpers.js";
+import { buildOffice, preloadOffice } from "./officeMap.js";
 
 /** Tempo (ms) lendo o "sim" antes de levantar da cadeira. */
 const STAND_UP_DELAY = 1500;
@@ -25,75 +25,14 @@ export default class OfficeScene extends Phaser.Scene {
   }
 
   preload() {
-    const { key, path, tilesetsPath } = game.map;
-    this.load.tilemapTiledJSON(key, path);
-    // Quando o JSON chega, enfileira as imagens dos tilesets referenciados por ele.
-    this.load.once(`filecomplete-tilemapJSON-${key}`, () => {
-      const cached = this.cache.tilemap.get(key);
-      if (!cached?.data?.tilesets) return;
-      for (const ts of cached.data.tilesets) {
-        const basename = ts.image.split("/").pop();
-        this.load.image(ts.name, `${tilesetsPath}/${basename}`);
-      }
-    });
-
-    for (const s of spriteSheets) this.load.image(s.key, s.path);
-
-    this.load.spritesheet(EMOTE_SHEET_KEY, EMOTE_SHEET_PATH, {
-      frameWidth: EMOTE_FRAME_SIZE,
-      frameHeight: EMOTE_FRAME_SIZE,
-    });
-    this.load.spritesheet("boss-arrow", `${PUBLIC_PATH}/sprites/arrow_down_48x48.png`, {
-      frameWidth: 48,
-      frameHeight: 48,
-    });
-    this.load.spritesheet("anim-door", `${PUBLIC_PATH}/sprites/animated_door_big_4_48x48.png`, {
-      frameWidth: 48,
-      frameHeight: 144,
-    });
+    preloadOffice(this);
   }
 
   create() {
-    for (const s of spriteSheets) buildSpriteFrames(this, s.key);
-
-    const map = this.make.tilemap({ key: game.map.key });
-    const tilesets = [];
-    for (const ts of map.tilesets) {
-      const added = map.addTilesetImage(ts.name, ts.name);
-      if (added) tilesets.push(added);
-    }
-    if (tilesets.length === 0) {
-      console.error("[OfficeScene] Nenhum tileset carregado");
-      return;
-    }
-
-    map.createLayer("floor", tilesets);
-    this.drawCoffeeArea();
-    map.createLayer("walls", tilesets);
-    map.createLayer("ground", tilesets);
-    map.createLayer("furniture", tilesets);
-    map.createLayer("objects", tilesets);
-
-    renderTileObjectLayer(this, map, "props", tilesets, 5);
-    renderTileObjectLayer(this, map, "props-over", tilesets, 11);
-
-    // Camada "overhead" fica por cima dos personagens (encosto das cadeiras, divisorias...).
-    const overhead = map.createLayer("overhead", tilesets);
-    if (overhead) overhead.setDepth(10);
-
-    const collisionGroup = this.physics.add.staticGroup();
-    buildCollisionRects(map, collisionGroup);
-
-    // Area jogavel: cobre o que sobra do recorte do mapa (ex.: parede da sala vizinha).
-    const pf = game.map.playfield ?? { x: 0, y: 0, width: map.widthInPixels, height: map.heightInPixels };
-    this.maskOutside(pf);
-
-    const { bossSpawn, workerSpawns } = parseSpawns(map);
-    this.coffeeSpots = game.coffee.spots.map((name) => findPoi(map, name)).filter(Boolean);
-    if (!this.coffeeSpots.length) {
-      console.warn(`[OfficeScene] Pontos ${game.coffee.spots.join(", ")} nao existem na camada "pois"; usando o spawn do chefe`);
-      this.coffeeSpots = [{ ...bossSpawn, facing: "up" }];
-    }
+    const office = buildOffice(this);
+    if (!office) return;
+    const { pf, collisionGroup, bossSpawn, workerSpawns } = office;
+    this.coffeeSpots = office.coffeeSpots;
 
     // Chefe: de pe, controlado pelo teclado.
     this.player = new Player(this, bossSpawn.x, bossSpawn.y, bossSpawn.facing, spriteKey(playerCfg.sprite));
@@ -212,44 +151,6 @@ export default class OfficeScene extends Phaser.Scene {
     if (aisleY !== aisles.top) points.push({ x: corridorX, y: aisleY }, { x: corridorX, y: aisles.top });
     points.push({ x: target.x, y: aisles.top }, { x: target.x, y: target.y });
     return { points, facing: target.facing };
-  }
-
-  /** Area de cafe: faixa de piso colorida e placa na parede (config/game.js -> coffee.area). */
-  drawCoffeeArea() {
-    const { label, x, y, width, height, color, alpha, sign } = game.coffee.area;
-    const tint = Phaser.Display.Color.HexStringToColor(color).color;
-    // Logo depois do piso: fica por baixo das paredes, moveis e personagens.
-    this.add.rectangle(x, y, width, height, tint, alpha).setOrigin(0, 0);
-    this.add.rectangle(x, y, width, height).setOrigin(0, 0).setStrokeStyle(2, tint, 0.55);
-
-    const text = this.add
-      .text(sign.x, sign.y, label, {
-        fontFamily: '"ArkPixel", "Press Start 2P", monospace',
-        fontSize: "14px",
-        fontStyle: "bold",
-        color: "#fff3d6",
-        padding: { x: 8, y: 6 },
-        backgroundColor: "#6b4a2b",
-      })
-      .setOrigin(0.5)
-      .setDepth(9)
-      .setResolution(2);
-    // Moldura da placa.
-    this.add
-      .rectangle(sign.x, sign.y, text.width + 4, text.height + 4)
-      .setStrokeStyle(2, 0x2b1b0e)
-      .setDepth(9);
-  }
-
-  /** Pinta com a cor de fundo tudo que esta fora da area jogavel. */
-  maskOutside(pf) {
-    const big = 4000;
-    const g = this.add.graphics().setDepth(12);
-    g.fillStyle(Phaser.Display.Color.HexStringToColor(game.display.backgroundColor).color, 1);
-    g.fillRect(pf.x - big, pf.y - big, big * 2 + pf.width, big); // acima
-    g.fillRect(pf.x - big, pf.y + pf.height, big * 2 + pf.width, big); // abaixo
-    g.fillRect(pf.x - big, pf.y, big, pf.height); // esquerda
-    g.fillRect(pf.x + pf.width, pf.y, big, pf.height); // direita
   }
 
   update() {

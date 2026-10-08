@@ -47,6 +47,7 @@ export async function runLoading() {
   const subtitle = $("loading-subtitle");
   const tip = $("loading-tip");
   const start = $("loading-start");
+  $("loading-classic").hidden = false;
 
   const status = new Map(characters.map((c) => [c.id, "waiting"]));
   const render = () => {
