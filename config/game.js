@@ -99,7 +99,7 @@ export const game = {
      * (scripts/serve.mjs), que repassa as chamadas para o `baseUrl`.
      */
     lanProxyPort: 3005,
-    model: "gemma4:e2b",
+    model: "gemma4:e4b",
     /**
      * Quantas instancias do modelo usar (cada uma ocupa ~3 GB de VRAM: 6 GB = 2). A 1a e o Ollama
      * padrao (`baseUrl`); as demais sao `ollama serve` extras que o `npm start` sobe nas portas
@@ -270,7 +270,14 @@ export const game = {
     retryMs: 5000,
     /** Reacoes do chefe a cada palpite (sorteadas). */
     bossReplies: {
-      wrong: ["Não!", "Errado!", "Nada a ver!", "Frio...", "Nem perto!", "Errou!"],
+      wrong: [
+        "Não!",
+        "Errado!",
+        "Nada a ver!",
+        "Frio...",
+        "Nem perto!",
+        "Errou!",
+      ],
       close: ["Tá quente!", "Quase!", "Chegou perto!", "Quente, quente!"],
       repeat: ["Já falaram isso!", "Esse já foi!", "De novo isso?"],
       none: ["Chuta alguma coisa!", "E aí, qual o palpite?"],
@@ -284,15 +291,63 @@ export const game = {
     /** Exemplos que aparecem no formulario (placeholder e botao "Sortear exemplo"). */
     placeholders: {
       word: "grampeador",
-      hints: ["Fica em cima da mesa", "Vive sumindo quando você precisa", "Faz \"clack\" e prende papel"],
+      hints: [
+        "Fica em cima da mesa",
+        "Vive sumindo quando você precisa",
+        'Faz "clack" e prende papel',
+      ],
     },
     examples: [
-      { word: "cadeira", category: "objeto", hints: ["Você passa o dia em cima dela", "Tem rodinhas", "Gira"] },
-      { word: "guarda-chuva", category: "objeto", hints: ["Fica esquecido no ônibus", "Abre e fecha", "Salva no dia cinza"] },
-      { word: "fone de ouvido", category: "objeto", hints: ["Você usa na cabeça", "Serve para não ouvir os colegas", "Tem fio ou bluetooth"] },
-      { word: "caneca", category: "objeto", hints: ["Todo mundo tem a sua na copa", "Tem alça", "Café quente vai nela"] },
-      { word: "privatização", category: "política", hints: ["O governo vende o que é dele", "Correios e estatais entram na conversa", "Liberal adora, sindicato odeia"] },
-      { word: "reforma agrária", category: "política", hints: ["Bandeira do MST", "Dividir a terra parada", "Tem a ver com o campo"] },
+      {
+        word: "cadeira",
+        category: "objeto",
+        hints: ["Você passa o dia em cima dela", "Tem rodinhas", "Gira"],
+      },
+      {
+        word: "guarda-chuva",
+        category: "objeto",
+        hints: [
+          "Fica esquecido no ônibus",
+          "Abre e fecha",
+          "Salva no dia cinza",
+        ],
+      },
+      {
+        word: "fone de ouvido",
+        category: "objeto",
+        hints: [
+          "Você usa na cabeça",
+          "Serve para não ouvir os colegas",
+          "Tem fio ou bluetooth",
+        ],
+      },
+      {
+        word: "caneca",
+        category: "objeto",
+        hints: [
+          "Todo mundo tem a sua na copa",
+          "Tem alça",
+          "Café quente vai nela",
+        ],
+      },
+      {
+        word: "privatização",
+        category: "política",
+        hints: [
+          "O governo vende o que é dele",
+          "Correios e estatais entram na conversa",
+          "Liberal adora, sindicato odeia",
+        ],
+      },
+      {
+        word: "reforma agrária",
+        category: "política",
+        hints: [
+          "Bandeira do MST",
+          "Dividir a terra parada",
+          "Tem a ver com o campo",
+        ],
+      },
     ],
   },
 
