@@ -100,6 +100,14 @@ export const game = {
      */
     lanProxyPort: 3005,
     model: "gemma4:e2b",
+    /**
+     * Quantas instancias do modelo usar (cada uma ocupa ~3 GB de VRAM: 6 GB = 2). A 1a e o Ollama
+     * padrao (`baseUrl`); as demais sao `ollama serve` extras que o `npm start` sobe nas portas
+     * `extraInstanceBasePort`, +1, +2... Os pedidos vao sempre para a instancia menos ocupada.
+     * Se alguma nao subir ou nao couber na VRAM, o jogo segue com as que carregaram.
+     */
+    instances: 1,
+    extraInstanceBasePort: 11435,
     /** Mantem o modelo carregado entre as mensagens (o 1o carregamento leva alguns segundos). */
     keepAlive: "30m",
     /** Desliga o modo "thinking" do Gemma 4: a resposta comeca na hora. */
@@ -159,20 +167,23 @@ export const game = {
       /** Quantas falas do chefe (contando a atual) ate o personagem soltar as pistas mais fortes. */
       minMessages: 1,
       /** Instrucoes para o gerador de pistas (tela de loading). */
-      cluesGuide: "pista bem clara, que quase entrega a palavra, mas sem dizê-la",
+      cluesGuide:
+        "pista bem clara, que quase entrega a palavra, mas sem dizê-la",
       /** Regra de comportamento no chat. */
       rule: "Você está de bom humor e brincalhão(ã): dá pistas bem claras e diretas, quase entregando a palavra, mas se diverte vendo o chefe boiar. Enquanto ele não acerta, enrola o convite do café com piadinhas e deboche leve. Nunca diga a palavra; só o chefe pode dizê-la.",
     },
     medium: {
       label: "Médio",
       minMessages: 2,
-      cluesGuide: "pista de meio-termo: aponta para a palavra, mas exige um pouco de raciocínio",
-      rule: "Você é provocador(a) e irônico(a): dá pistas de meio-termo e caçoa dos palpites errados do chefe (\"sério que foi isso que você entendeu?\"). Resiste ao café com sarcasmo e, a cada erro, dá outra pista por um ângulo diferente. Nunca diga a palavra.",
+      cluesGuide:
+        "pista de meio-termo: aponta para a palavra, mas exige um pouco de raciocínio",
+      rule: 'Você é provocador(a) e irônico(a): dá pistas de meio-termo e caçoa dos palpites errados do chefe ("sério que foi isso que você entendeu?"). Resiste ao café com sarcasmo e, a cada erro, dá outra pista por um ângulo diferente. Nunca diga a palavra.',
     },
     hard: {
       label: "Difícil",
       minMessages: 3,
-      cluesGuide: "pista vaga e curta, que só faz sentido para quem presta muita atenção",
+      cluesGuide:
+        "pista vaga e curta, que só faz sentido para quem presta muita atenção",
       rule: "Você é enigmático(a), zombeteiro(a) e difícil de convencer: recusa o café com deboche e dá só pistas vagas e curtas, uma de cada vez, rindo da confusão do chefe. Nas primeiras falas, as pistas mais obscuras e as melhores tiradas; só solta algo mais claro se ele implorar. Nunca diga a palavra.",
     },
   },

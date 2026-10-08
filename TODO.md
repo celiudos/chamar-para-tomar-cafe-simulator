@@ -22,3 +22,7 @@ A palavra que o usuário quer tem que ser exatamente a mesma que o personagem es
 O diálgo tem que simular como se fosse uma tentativa de convencer o personagem a tomar café, mas o diálogo seguirá a linha da dinânmica do jogo "Imagem e Ação", onde o personagem vai dar pistas contextuais para que o jogador tente adivinhar a palavra que ele está pensando.
 
 # Instrução
+
+Crie um novo modo de jogo para o jogo atual, no qual, em vez de os personagens ficarem sentados, eles ficam em pé e andando, conversando uns com os outros. Então fica aparecendo balões de diálogo entre eles.
+
+O objetivo vai ser, o jogador consegue definir a palavra chave e as dicas e os personagens vão conversar entre eles e tentar identificar a palavra que o jogador está pensando.
